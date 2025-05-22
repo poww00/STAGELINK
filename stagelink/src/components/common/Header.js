@@ -1,10 +1,13 @@
-// src/components/common/Header.js
 import React from "react";
 import { Link } from "react-router-dom";
+import useCustomLogin from "../../hook/useCustomLogin";
 
 const Header = () => {
 
-  const userId = 1; //로그인 기능이 아직 없어 임시 선언함
+  const { isLogin, userId, doLogout } = useCustomLogin();
+
+
+  //const userId = 1; //로그인 기능이 아직 없어 임시 선언함
 
   return (
     <header className="bg-white shadow sticky top-0 z-50">
@@ -38,16 +41,37 @@ const Header = () => {
               커뮤니티
             </button>
           </Link>
-          <Link to={`/mypage/${userId}`} className="flex-1">
-            <button className="w-full text-sm font-bold text-white bg-purple-500 py-3 rounded-full hover:bg-purple-600">
+          {/* 로그인 여부에 따라 버튼 분기 */}
+          {isLogin ? (
+            <Link to={`/mypage/${userId}`} className="flex-1">
+              <button className="w-full text-sm font-bold text-white bg-purple-500 py-3 rounded-full hover:bg-purple-600">
+                마이페이지
+              </button>
+            </Link>
+          ) : (
+            <button
+              className="flex-1 w-full text-sm font-bold text-white bg-purple-300 py-3 rounded-full cursor-not-allowed"
+              disabled
+              aria-label="로그인 후 이용 가능"
+            >
               마이페이지
             </button>
-          </Link>
-          <Link to="/login" className="flex-1">
-            <button className="w-full text-sm font-bold text-white bg-purple-500 py-3 rounded-full hover:bg-purple-600">
-              로그인 / 회원가입
+          )}
+           {/* 로그인 여부에 따라 버튼 분기 */}
+          {isLogin ? (
+            <button
+              onClick={doLogout}
+              className="flex-1 w-full text-sm font-bold text-white bg-purple-500 py-3 rounded-full hover:bg-purple-600"
+            >
+              로그아웃
             </button>
-          </Link>
+          ) : (
+            <Link to="/login" className="flex-1">
+              <button className="w-full text-sm font-bold text-white bg-purple-500 py-3 rounded-full hover:bg-purple-600">
+                로그인 / 회원가입
+              </button>
+            </Link>
+          )}
         </div>
       </div>
     </header>
