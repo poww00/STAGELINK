@@ -21,12 +21,20 @@ import UserInfoPage from "./pages/mypage/UserInfoPage";
 import MypageHome from "./components/mypage/MypageHome";
 import RequireLoginRoute from "./components/common/RequiredLoginRoute";
 import KakaoCallback from "./pages/user/KakaoCallback";
+import ShowDetailPage from "./pages/show/ShowDetailPage";
+import ActorDetailPage from "./pages/actor/ActorDetailPage";
+import SearchResultPage from "./pages/search/SearchResultPage";
+import PaymentStepperPage from "./pages/payment/PaymentStepperPage";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/shows/:id" element={<ShowDetailPage />} />
+        <Route path="/actors/:id" element={<ActorDetailPage />} />
+        <Route path="/search" element={<SearchResultPage />} />
+        <Route path="/payment/stepper" element={<PaymentStepperPage />} />
 
         <Route path="/community/posts" element={<PostListPage />} />
         <Route path="/community/posts/:postNo" element={<PostDetailPage />} />
@@ -65,6 +73,8 @@ function App() {
           <Route index element={<MypageHome />} />
           <Route path="info" element={<UserInfoPage />} />
         </Route>
+
+
       </Routes>
     </Router>
   );

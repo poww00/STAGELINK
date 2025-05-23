@@ -1,5 +1,6 @@
 // src/components/home/CarouselRank.js
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const mockData = {
   top20: Array.from({ length: 20 }, (_, i) => ({
@@ -26,18 +27,55 @@ const mockData = {
     })),
   },
   age: {
-    "10대": [...Array(20)].map((_, i) => ({ id: i + 301, name: `10대 공연 ${i + 1}`, poster: `/images/poster${(i % 5) + 1}.jpg`, category: "아동극", age: 7 })),
-    "20대": [...Array(20)].map((_, i) => ({ id: i + 321, name: `20대 공연 ${i + 1}`, poster: `/images/poster${(i % 5) + 1}.jpg`, category: "연극", age: 19 })),
-    "30대": [...Array(20)].map((_, i) => ({ id: i + 341, name: `30대 공연 ${i + 1}`, poster: `/images/poster${(i % 5) + 1}.jpg`, category: "뮤지컬", age: 15 })),
-    "40대": [...Array(20)].map((_, i) => ({ id: i + 361, name: `40대 공연 ${i + 1}`, poster: `/images/poster${(i % 5) + 1}.jpg`, category: "클래식", age: 20 })),
-    "50대": [...Array(20)].map((_, i) => ({ id: i + 381, name: `50대 공연 ${i + 1}`, poster: `/images/poster${(i % 5) + 1}.jpg`, category: "오페라", age: 17 })),
-    "60대 이상": [...Array(20)].map((_, i) => ({ id: i + 401, name: `60대 이상 공연 ${i + 1}`, poster: `/images/poster${(i % 5) + 1}.jpg`, category: "전통극", age: 10 })),
+    "10대": Array.from({ length: 20 }, (_, i) => ({
+      id: i + 301,
+      name: `10대 공연 ${i + 1}`,
+      poster: `/images/poster${(i % 5) + 1}.jpg`,
+      category: "아동극",
+      age: 7,
+    })),
+    "20대": Array.from({ length: 20 }, (_, i) => ({
+      id: i + 321,
+      name: `20대 공연 ${i + 1}`,
+      poster: `/images/poster${(i % 5) + 1}.jpg`,
+      category: "연극",
+      age: 19,
+    })),
+    "30대": Array.from({ length: 20 }, (_, i) => ({
+      id: i + 341,
+      name: `30대 공연 ${i + 1}`,
+      poster: `/images/poster${(i % 5) + 1}.jpg`,
+      category: "뮤지컬",
+      age: 15,
+    })),
+    "40대": Array.from({ length: 20 }, (_, i) => ({
+      id: i + 361,
+      name: `40대 공연 ${i + 1}`,
+      poster: `/images/poster${(i % 5) + 1}.jpg`,
+      category: "클래식",
+      age: 20,
+    })),
+    "50대": Array.from({ length: 20 }, (_, i) => ({
+      id: i + 381,
+      name: `50대 공연 ${i + 1}`,
+      poster: `/images/poster${(i % 5) + 1}.jpg`,
+      category: "오페라",
+      age: 17,
+    })),
+    "60대 이상": Array.from({ length: 20 }, (_, i) => ({
+      id: i + 401,
+      name: `60대 이상 공연 ${i + 1}`,
+      poster: `/images/poster${(i % 5) + 1}.jpg`,
+      category: "전통극",
+      age: 10,
+    })),
   },
 };
 
 const CarouselRank = ({ filter = "top20" }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [currentList, setCurrentList] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setCurrentPage(0);
@@ -53,16 +91,17 @@ const CarouselRank = ({ filter = "top20" }) => {
   }, [filter]);
 
   const totalPages = Math.ceil(currentList.length / 5);
-
   const handlePrev = () => {
     setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
   };
-
   const handleNext = () => {
     setCurrentPage((prev) => (prev + 1) % totalPages);
   };
 
   const paginated = currentList.slice(currentPage * 5, currentPage * 5 + 5);
+  const handleClick = (showId) => {
+    navigate(`/shows/${showId}`);
+  };
 
   const getTitle = () => {
     if (filter.startsWith("gender:")) {
@@ -78,26 +117,28 @@ const CarouselRank = ({ filter = "top20" }) => {
   return (
     <div className="my-8">
       <h2 className="text-xl font-bold text-blue-700 mb-4 text-center">{getTitle()}</h2>
-      <div className="relative max-w-7xl mx-auto px-6">
+      <div className="relative max-w-5xl mx-auto px-4">
         <div className="flex justify-center items-center gap-6">
-          <button onClick={handlePrev} className="text-5xl text-gray-500 hover:text-black">◀</button>
+          <button onClick={handlePrev} className="text-4xl text-gray-500 hover:text-black">◀</button>
           {paginated.map((show) => (
-            <div
+             <div
               key={show.id}
-              className="w-[300px] h-[420px] flex-shrink-0 border rounded-xl overflow-hidden shadow hover:shadow-md transition flex flex-col"
+              onClick={() => handleClick(show.id)}
+              className="w-[240px] border rounded-xl overflow-hidden shadow hover:shadow-md transition flex flex-col cursor-pointer"
             >
               <img
                 src={show.poster}
                 alt={show.name}
-                className="w-full h-[240px] object-cover"
+                className="w-full h-[200px] object-cover"
               />
-              <div className="w-full p-4 flex flex-col justify-end h-full">
-                <h3 className="font-bold text-base break-words whitespace-normal mt-auto">{show.name}</h3>
-                <p className="text-sm text-gray-600">{show.category} · {show.age}세 이상</p>
+              <div className="w-full p-3 flex flex-col justify-end">
+                <h3 className="font-bold text-sm break-words whitespace-normal">{show.name}</h3>
+                <p className="text-xs text-gray-600">{show.category} · {show.age}세 이상</p>
               </div>
             </div>
-          ))}
-          <button onClick={handleNext} className="text-5xl text-gray-500 hover:text-black">▶</button>
+            ))}
+
+          <button onClick={handleNext} className="text-4xl text-gray-500 hover:text-black">▶</button>
         </div>
       </div>
     </div>
