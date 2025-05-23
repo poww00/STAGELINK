@@ -8,7 +8,8 @@ const QnaDetailPage = () => {
   const { questionNo } = useParams();
   const navigate = useNavigate();
   const [qna, setQna] = useState(null);
-  const devMode = true;
+
+  const devMode = false;
   const testMemberNo = 1003;
   const isLoggedIn = !!localStorage.getItem('accessToken');
 
@@ -54,7 +55,7 @@ const QnaDetailPage = () => {
     }, { headers })
       .then((res) => {
         alert('평점이 등록되었습니다!');
-        setQna(res.data); // 새로 받은 평점 데이터 반영
+        setQna(res.data);
       })
       .catch((err) => {
         console.error('평점 등록 실패:', err);
@@ -85,14 +86,6 @@ const QnaDetailPage = () => {
             {/* 질문 */}
             <div className="border-b pb-4 mb-6 text-lg text-gray-900 whitespace-pre-line relative">
               {qna.questionContents}
-              {isAuthor && (
-                <button
-                  onClick={handleDelete}
-                  className="absolute top-0 right-0 text-sm text-red-500 hover:underline"
-                >
-                  삭제하기
-                </button>
-              )}
             </div>
 
             {/* 답변 */}
@@ -110,21 +103,21 @@ const QnaDetailPage = () => {
                 </div>
                 <div className="text-sm text-right text-gray-600">
                   평점:{' '}
-                  {qna.answerContents && qna.answerContents.trim() !== '' ? (
-                    <span className="text-yellow-500 cursor-pointer">
-                      {[1, 2, 3, 4, 5].map((value) => (
-                        <span
-                          key={value}
-                          onClick={() => handleRating(value)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {value <= rating ? '★' : '☆'}
-                        </span>
-                      ))}
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">답변 후 평점 가능</span>
-                  )}
+                  <span className="text-yellow-500">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <span
+                        key={value}
+                        onClick={
+                          qna.answerContents && isAuthor
+                            ? () => handleRating(value)
+                            : undefined
+                        }
+                        style={{ cursor: qna.answerContents && isAuthor ? 'pointer' : 'default' }}
+                      >
+                        {value <= rating ? '★' : '☆'}
+                      </span>
+                    ))}
+                  </span>
                 </div>
               </div>
             </div>

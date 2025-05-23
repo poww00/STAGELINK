@@ -6,7 +6,7 @@ import Footer from '../../components/common/Footer';
 
 const PostWritePage = () => {
   const navigate = useNavigate();
-  const devMode = true; // ✅ 로그인 우회 여부 설정
+  const devMode = false;    // true/false
   const isLoggedIn = !!localStorage.getItem('accessToken');
 
   const [title, setTitle] = useState('');

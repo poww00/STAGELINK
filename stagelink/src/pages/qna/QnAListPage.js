@@ -19,7 +19,7 @@ const QnAListPage = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
-  const devMode = true; // ✅ 로그인 우회 테스트 모드
+  const devMode = false; // true/false
   const isLoggedIn = !!localStorage.getItem('accessToken');
 
   const searchOptions = ['질문'];
