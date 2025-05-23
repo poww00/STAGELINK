@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const PostCard = ({ post, index }) => {
-  // ✅ post.postRegisterDate로 수정
+  const navigate = useNavigate();
+
   let formattedDate = '날짜 없음';
   if (post.postRegisterDate) {
     const parsedDate = new Date(post.postRegisterDate);
@@ -23,14 +24,17 @@ const PostCard = ({ post, index }) => {
     return stars;
   };
 
+  const handleClick = () => {
+    navigate(`/community/posts/${post.postNo}`);
+  };
+
   return (
-    <div className="grid grid-cols-12 py-3 min-h-[56px] items-center border-b text-sm text-center">
+    <div
+      className="grid grid-cols-12 py-3 min-h-[56px] items-center border-b text-sm text-center cursor-pointer hover:bg-blue-50 transition"
+      onClick={handleClick}
+    >
       <div className="col-span-1">{index + 1}</div>
-      <div className="col-span-5 text-left pl-2">
-        <Link to={`/community/posts/${post.postNo}`} className="text-blue-700 hover:underline">
-          {post.postTitle}
-        </Link>
-      </div>
+      <div className="col-span-5 text-left pl-2 text-gray-900">{post.postTitle}</div>
       <div className="col-span-2">{renderStars(post.postRating)}</div>
       <div className="col-span-2">{post.nickname}</div>
       <div className="col-span-2">{formattedDate}</div>

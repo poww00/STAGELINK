@@ -7,7 +7,7 @@ import Footer from '../../components/common/Footer';
 const PostEditPage = () => {
   const { postNo } = useParams();
   const navigate = useNavigate();
-  const devMode = true;     // false/true
+  const devMode = false;     // false/true
   const isLoggedIn = !!localStorage.getItem('accessToken');
 
   const [title, setTitle] = useState('');

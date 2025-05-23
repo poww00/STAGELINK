@@ -14,7 +14,7 @@ const PostDetailPage = () => {
   const [commentPage, setCommentPage] = useState(1);
   const commentPageSize = 7;
 
-  const devMode = true;
+  const devMode = false;
   const testMemberNo = 1003;
   const isLoggedIn = !!localStorage.getItem('accessToken');
 
@@ -35,6 +35,11 @@ const PostDetailPage = () => {
   }, [postNo]);
 
   const handleSubmitComment = () => {
+    if (!devMode && !isLoggedIn) {
+      alert('로그인 후 이용해주세요.');
+      return;
+    }
+
     if (!commentContent.trim()) {
       alert('댓글 내용을 입력해주세요.');
       return;
@@ -109,7 +114,7 @@ const PostDetailPage = () => {
 
     const reportData = {
       postNo: post.postNo,
-      suspectId: post.member, // ← 변경됨
+      suspectId: post.member,
       reportedId: testMemberNo,
       reportReason: '부적절한 콘텐츠입니다.'
     };
@@ -139,7 +144,7 @@ const PostDetailPage = () => {
   const totalCommentPages = Math.ceil(comments.length / commentPageSize);
   const pagedComments = comments.slice((commentPage - 1) * commentPageSize, commentPage * commentPageSize);
   const formattedDate = post?.postRegisterDate?.substring(0, 10);
-  const isAuthor = devMode || post?.member === testMemberNo;
+  const isAuthor = (devMode || isLoggedIn) && post?.member === testMemberNo;
 
   if (!post) {
     return (
@@ -217,32 +222,41 @@ const PostDetailPage = () => {
             )}
           </div>
 
-          <div className="mb-2">
-            <label className="text-sm mr-2">평점</label>
-            <select
-              value={commentRating}
-              onChange={(e) => setCommentRating(parseInt(e.target.value))}
-              className="border rounded px-2 py-1 text-sm"
-            >
-              {[1, 2, 3, 4, 5].map((r) => (
-                <option key={r} value={r}>{'★'.repeat(r)}</option>
-              ))}
-            </select>
-          </div>
-          <textarea
-            value={commentContent}
-            onChange={(e) => setCommentContent(e.target.value)}
-            placeholder="댓글 내용을 입력하세요 (최대 500자)"
-            maxLength={500}
-            className="w-full border rounded p-2 mb-2 text-sm"
-          />
-          <button
-            onClick={handleSubmitComment}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            등록하기
-          </button>
+          {devMode || isLoggedIn ? (
+            <>
+              <div className="mb-2">
+                <label className="text-sm mr-2">평점</label>
+                <select
+                  value={commentRating}
+                  onChange={(e) => setCommentRating(parseInt(e.target.value))}
+                  className="border rounded px-2 py-1 text-sm"
+                >
+                  {[1, 2, 3, 4, 5].map((r) => (
+                    <option key={r} value={r}>{'★'.repeat(r)}</option>
+                  ))}
+                </select>
+              </div>
+              <textarea
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+                placeholder="댓글 내용을 입력하세요 (최대 500자)"
+                maxLength={500}
+                className="w-full border rounded p-2 mb-2 text-sm"
+              />
+              <button
+                onClick={handleSubmitComment}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                등록하기
+              </button>
+            </>
+          ) : (
+            <p className="text-sm text-gray-500 mt-2">
+              로그인 후 댓글을 작성하실 수 있습니다.
+            </p>
+          )}
         </div>
+
 
         {/* 댓글 목록 */}
         <div className="border-t pt-6">
@@ -252,52 +266,46 @@ const PostDetailPage = () => {
           ) : (
             <>
               <div className="space-y-4">
-                {pagedComments.map((comment) => (
-                  <div key={comment.commentNo} className="border p-3 rounded relative">
+                {pagedComments.map((comment) => {
+                  const canDelete = (devMode || isLoggedIn) && comment.member === testMemberNo;
 
-                    {/* 닉네임 + 날짜 + 신고버튼 한 줄로 정렬 */}
-                    <div className="flex justify-between items-center mb-1 text-sm text-gray-600">
-                      <span className="font-semibold">{comment.nickname}</span>
-                      <div className="flex items-center gap-2">
-                        <span>{comment.commentRegisterDate?.substring(0, 10)}</span>
+                  return (
+                    <div key={comment.commentNo} className="border p-3 rounded relative">
+                      <div className="flex justify-between items-center mb-1 text-sm text-gray-600">
+                        <span className="font-semibold">{comment.nickname}</span>
+                        <div className="flex items-center gap-2">
+                          <span>{comment.commentRegisterDate?.substring(0, 10)}</span>
+                          <button
+                            onClick={() => handleReportComment(comment.commentNo)}
+                            className="text-xs text-red-500 hover:underline"
+                          >
+                            신고
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-yellow-500 text-sm mb-1">
+                        {'★'.repeat(comment.commentRating || 0)}
+                        {'☆'.repeat(5 - (comment.commentRating || 0))}
+                      </div>
+                      <div className="text-sm text-gray-800 whitespace-pre-wrap">
+                        {comment.commentContent}
+                      </div>
+                      {comment.commentReportCount > 0 && (
+                        <div className="text-xs text-red-500 mt-1">
+                          ※ 신고 {comment.commentReportCount}회
+                        </div>
+                      )}
+                      {canDelete && (
                         <button
-                          onClick={() => handleReportComment(comment.commentNo)}
-                          className="text-xs text-red-500 hover:underline"
+                          onClick={() => handleDeleteComment(comment.commentNo)}
+                          className="absolute bottom-2 right-2 text-xs text-red-500 hover:underline"
                         >
-                          신고
+                          삭제
                         </button>
-                      </div>
+                      )}
                     </div>
-
-                    {/* 별점 */}
-                    <div className="text-yellow-500 text-sm mb-1">
-                      {'★'.repeat(comment.commentRating || 0)}
-                      {'☆'.repeat(5 - (comment.commentRating || 0))}
-                    </div>
-
-                    {/* 댓글 내용 */}
-                    <div className="text-sm text-gray-800 whitespace-pre-wrap">
-                      {comment.commentContent}
-                    </div>
-
-                    {/* 신고 횟수 */}
-                    {comment.commentReportCount > 0 && (
-                      <div className="text-xs text-red-500 mt-1">
-                        ※ 신고 {comment.commentReportCount}회
-                      </div>
-                    )}
-
-                    {/* 삭제 버튼: 오른쪽 하단 고정 */}
-                    {comment.member === testMemberNo && (
-                      <button
-                        onClick={() => handleDeleteComment(comment.commentNo)}
-                        className="absolute bottom-2 right-2 text-xs text-red-500 hover:underline"
-                      >
-                        삭제
-                      </button>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* 페이지네이션 */}

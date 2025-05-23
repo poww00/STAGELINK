@@ -6,7 +6,7 @@ import Footer from '../../components/common/Footer';
 
 const QnaWritePage = () => {
   const navigate = useNavigate();
-  const devMode = true; // false로 바꾸면 로그인 필요
+  const devMode = false; // false로 바꾸면 로그인 필요
   const isLoggedIn = !!localStorage.getItem('accessToken');
   const [question, setQuestion] = useState('');
 

@@ -14,10 +14,10 @@ const PostListPage = () => {
   const [selectedShowName, setSelectedShowName] = useState('공연 전체');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 7;
+  const pageSize = 7;       // 7개의 게시물이 한 페이지에 나타남
   const navigate = useNavigate();
 
-  const devMode = true;
+  const devMode = false;        // true/false
   const isLoggedIn = !!localStorage.getItem('accessToken');
 
   const showStateMap = {
