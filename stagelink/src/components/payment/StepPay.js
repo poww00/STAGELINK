@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 /**
  * StepPay - 예매 Step 3: 결제(카카오페이) 실행 컴포넌트
