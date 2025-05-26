@@ -1,5 +1,6 @@
 import React from "react";
 import axios from "axios";
+import jwtDecode from "jwt-decode";
 
 /**
  * StepPay - 예매 Step 3: 결제(카카오페이) 실행 컴포넌트
@@ -22,7 +23,16 @@ const StepPay = ({
   onPaySuccess,
   onBack,
 }) => {
-  const memberId = 1004; // [실제론 로그인 사용자 PK로 대체]
+  // userId를 JWT에서 동적으로 추출
+  let userId = null;
+  try {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      userId = jwtDecode(token).id;
+    }
+  } catch (e) {
+    userId = null;
+  }
 
   // 실제 등급별 가격 (백엔드에서 받아옴)
   const seatPrices = {
@@ -89,6 +99,10 @@ const StepPay = ({
       alert("아임포트 JS 라이브러리가 로드되지 않았습니다.");
       return;
     }
+    if (!userId) {
+      alert("로그인 후 이용해 주세요!");
+      return;
+    }
     window.IMP.init("imp51662248"); // [테스트용: 실제론 본인 imp 코드 사용]
     window.IMP.request_pay(
       {
@@ -99,13 +113,12 @@ const StepPay = ({
         amount: totalAmount,
         buyer_email: "test@user.com",
         buyer_name: "홍길동",
-        // buyer_tel: 없음 (회원정보 X)
       },
       function (rsp) {
         if (rsp.success) {
           // 결제 성공시 서버로 결제/예매 검증 요청
           const postData = {
-            memberId,
+            userId,
             showId,
             seatIdList,
             date,

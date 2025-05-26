@@ -11,7 +11,7 @@ const mockTimes = [
   { id: 3, label: "18:00 ~ 20:00" },
 ];
 
-const StickyBookingPanel = ({ showId, onLike, onReserve, liked, memberId, openLoginModal }) => {
+const StickyBookingPanel = ({ showId, onLike, onReserve, liked, userId, openLoginModal }) => {
   const today = new Date();
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -37,7 +37,7 @@ const StickyBookingPanel = ({ showId, onLike, onReserve, liked, memberId, openLo
 
   // 예매 버튼 클릭 시: 로그인 체크 → 모달 안내 또는 예매 진행
   const handleReserveClick = () => {
-    if (!memberId) {
+    if (!userId) {
       openLoginModal("로그인이 필요한 서비스입니다. 로그인 해주세요!");
       return;
     }
@@ -50,7 +50,7 @@ const StickyBookingPanel = ({ showId, onLike, onReserve, liked, memberId, openLo
 
   // 찜하기도 로그인 체크 필요시 아래 방식 사용 권장
   const handleLikeClick = () => {
-    if (!memberId) {
+    if (!userId) {
       openLoginModal("로그인이 필요한 서비스입니다. 로그인 해주세요!");
       return;
     }
