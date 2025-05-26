@@ -1,7 +1,7 @@
-// src/pages/show/ShowDetailPage.js
 import React, { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import jwtDecode from "jwt-decode";
 
 // 공통 레이아웃/컴포넌트
 import Header from "../../components/common/Header";
@@ -46,8 +46,20 @@ const ShowDetailPage = () => {
   const [seatModalOpen, setSeatModalOpen] = useState(false); // 좌석선택/결제 모달
   const [reserveInfo, setReserveInfo] = useState({ date: null, time: null }); // 예매일/회차
 
-  // 임시 memberId (로그인 기능 전)
-  const memberId = 1;
+  // userId: JWT에서 추출
+  const [userId, setUserId] = useState(null);
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      try {
+        setUserId(jwtDecode(token).id);
+      } catch (e) {
+        setUserId(null);
+      }
+    } else {
+      setUserId(null);
+    }
+  }, []);
 
   // === 공연 상세정보 불러오기 (mount/ID 변경시) ===
   useEffect(() => {
@@ -57,26 +69,26 @@ const ShowDetailPage = () => {
 
   // === 현재 유저의 찜 여부 조회 ===
   useEffect(() => {
-    if (id && memberId) {
+    if (id && userId) {
       axios
-        .get(`/api/likes/check?showNo=${id}&memberId=${memberId}`)
+        .get(`/api/likes/check?showNo=${id}&userId=${userId}`)
         .then(res => setLiked(res.data))
         .catch(() => setLiked(false));
     }
-  }, [id, memberId]);
+  }, [id, userId]);
 
   // === 안내 모달 열기 ===
   const openLoginModal = (message) => setLoginModal({ open: true, message });
 
   // === 찜하기/취소 버튼 클릭시 ===
   const handleLike = () => {
-    if (!memberId) {
+    if (!userId) {
       openLoginModal("로그인이 필요한 서비스입니다. 로그인 해주세요!");
       return;
     }
     if (liked) {
       axios
-        .delete(`/api/likes?showNo=${id}&memberId=${memberId}`)
+        .delete(`/api/likes?showNo=${id}&userId=${userId}`)
         .then(() => {
           setLiked(false);
           openLoginModal("찜 목록에서 삭제되었습니다!");
@@ -84,7 +96,7 @@ const ShowDetailPage = () => {
         .catch(() => openLoginModal("찜 취소에 실패했습니다."));
     } else {
       axios
-        .post(`/api/likes?showNo=${id}&memberId=${memberId}`)
+        .post(`/api/likes?showNo=${id}&userId=${userId}`)
         .then(() => {
           setLiked(true);
           openLoginModal("찜 목록에 추가되었습니다!");
@@ -117,7 +129,7 @@ const ShowDetailPage = () => {
             onLike={handleLike}
             onReserve={handleReserve}
             liked={liked}
-            memberId={memberId}
+            userId={userId}
             openLoginModal={openLoginModal}
           />
         </div>

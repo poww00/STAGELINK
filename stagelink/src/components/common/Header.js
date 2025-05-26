@@ -1,10 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import jwtDecode from "jwt-decode";
 
 const Header = () => {
-  const userId = 1;
+  const [userId, setUserId] = useState(null);
   const [search, setSearch] = useState(""); // 검색어 상태 추가
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUserId(decoded.id);
+      } catch (err) {
+        setUserId(null);
+      }
+    } else {
+      setUserId(null);
+    }
+  }, []);
 
   // 엔터 입력시 검색 결과 페이지로 이동
   const handleKeyDown = (e) => {
@@ -48,7 +63,7 @@ const Header = () => {
               커뮤니티
             </button>
           </Link>
-          <Link to={`/mypage/${userId}`} className="flex-1">
+          <Link to={userId ? `/mypage/${userId}` : "/login"} className="flex-1">
             <button className="w-full text-xs font-semibold text-white bg-purple-500 py-1.5 rounded-full hover:bg-purple-600">
               마이페이지
             </button>
