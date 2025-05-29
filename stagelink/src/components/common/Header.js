@@ -1,25 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import useCustomLogin from "../../hook/useCustomLogin"; // 커스텀 훅을 사용하여 로그인 상태 관리
 
 const Header = () => {
-  const [userId, setUserId] = useState(null);
+
   const [search, setSearch] = useState(""); // 검색어 상태 추가
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setUserId(decoded.id);
-      } catch (err) {
-        setUserId(null);
-      }
-    } else {
-      setUserId(null);
-    }
-  }, []);
+  const { isLogin, userId, doLogout } = useCustomLogin(); // 로그인 정보
 
   // 엔터 입력시 검색 결과 페이지로 이동
   const handleKeyDown = (e) => {
@@ -63,16 +50,39 @@ const Header = () => {
               커뮤니티
             </button>
           </Link>
-          <Link to={userId ? `/mypage/${userId}` : "/login"} className="flex-1">
-            <button className="w-full text-xs font-semibold text-white bg-purple-500 py-1.5 rounded-full hover:bg-purple-600">
+
+
+          {/* 로그인 여부에 따라 버튼 분기 */}
+          {isLogin ? (
+            <Link to={`/mypage`} className="flex-1">
+              <button className="w-full text-xs font-semibold text-white bg-purple-500 py-1.5 rounded-full hover:bg-purple-600">
+                마이페이지
+              </button>
+            </Link>
+          ) : (
+            <button
+              className="flex-1 w-full text-xs font-semibold text-white bg-purple-300 py-1.5 rounded-full cursor-not-allowed"
+              disabled
+              aria-label="로그인 후 이용 가능"
+            >
               마이페이지
             </button>
-          </Link>
-          <Link to="/login" className="flex-1">
-            <button className="w-full text-xs font-semibold text-white bg-purple-500 py-1.5 rounded-full hover:bg-purple-600">
-              로그인 / 회원가입
+          )}
+          {/* 로그인 여부에 따라 버튼 분기 */}
+          {isLogin ? (
+            <button
+              onClick={doLogout}
+              className="flex-1 w-full text-xs font-bold text-white bg-purple-500 py-1.5 rounded-full hover:bg-purple-600"
+            >
+              로그아웃
             </button>
-          </Link>
+          ) : (
+            <Link to="/login" className="flex-1">
+              <button className="w-full text-xs font-bold text-white bg-purple-500 py-1.5 rounded-full hover:bg-purple-600">
+                로그인 / 회원가입
+              </button>
+            </Link>
+          )}
         </div>
       </div>
     </header>

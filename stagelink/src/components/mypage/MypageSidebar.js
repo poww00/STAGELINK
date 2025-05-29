@@ -10,6 +10,7 @@ const MypageSidebar = () => {
   ];
 
   return (
+
     <aside className="w-full h-full flex items-center border-l-2 border-gray-200 pl-6">
       <div className="flex flex-col justify-center w-full">
         {/* 타이틀 */}
@@ -40,6 +41,7 @@ const MypageSidebar = () => {
         </ul>
       </div>
     </aside>
+
   );
 };
 
