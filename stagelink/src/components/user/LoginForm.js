@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { login } from "../../slices/loginSlice"
 import { jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
@@ -10,6 +10,10 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
+
+  // 로그 전 원래 경로 기억
+  const from = location.state?.from?.pathname || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,8 +36,8 @@ const LoginForm = () => {
         })
       );
       
-      // 메인페이지로 이동
-      navigate("/");
+      // 로그인 전 경로로 리다이렉트
+      navigate(from, { replace: true });
     } catch (error) {
       console.error("로그인 실패", error.response?.data || error.message);
       alert("로그인에 실패했어요.");
