@@ -32,8 +32,8 @@ const NoticeDetailPage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      {/* ✅ 넓은 레이아웃으로 수정 */}
-      <main className="flex-grow w-full px-16 py-10">
+      {/* 넓은 레이아웃으로 수정 */}
+      <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
         {/* ← 목록으로 돌아가기 */}
         <button
           onClick={() => navigate('/community/notice')}

@@ -6,16 +6,18 @@ import Footer from '../../components/common/Footer';
 
 const QnaWritePage = () => {
   const navigate = useNavigate();
-  const devMode = false; // false로 바꾸면 로그인 필요
-  const isLoggedIn = !!localStorage.getItem('accessToken');
+  const accessToken = localStorage.getItem('accessToken');
+  const isLoggedIn = !!accessToken;
   const [question, setQuestion] = useState('');
 
   useEffect(() => {
-    if (!devMode && !isLoggedIn) {
+    if (!isLoggedIn) {
       alert('로그인 후 이용 가능합니다.');
       navigate('/login');
+    } else {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     }
-  }, [devMode, isLoggedIn, navigate]);
+  }, [isLoggedIn, accessToken, navigate]);
 
   const handleSubmit = () => {
     if (!question.trim()) {
@@ -26,17 +28,13 @@ const QnaWritePage = () => {
     const data = { questionContents: question };
 
     axios
-      .post('/api/community/qna', data, {
-        headers: devMode
-          ? {}
-          : { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
-      })
+      .post('/api/community/qna', data)
       .then(() => {
         alert('질문이 등록되었습니다.');
         navigate('/community/qna');
       })
       .catch((err) => {
-        console.error('❌ 질문 등록 실패:', err);
+        console.error('질문 등록 실패:', err);
         alert('질문 등록 중 오류가 발생했습니다.');
       });
   };
@@ -45,7 +43,6 @@ const QnaWritePage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      {/* 넓이 늘림: max-w-5xl */}
       <main className="flex-grow w-full max-w-5xl mx-auto px-6 py-12">
         <button
           onClick={() => navigate('/community/qna')}

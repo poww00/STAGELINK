@@ -15,13 +15,11 @@ const QnAListPage = () => {
   const [searchText, setSearchText] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchType, setSearchType] = useState('질문');
-  const pageSize = 7;
+  const pageSize = 10;
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
-  const devMode = false; // true/false
   const isLoggedIn = !!localStorage.getItem('accessToken');
-
   const searchOptions = ['질문'];
 
   useEffect(() => {
@@ -60,14 +58,13 @@ const QnAListPage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      <main className="grow w-full px-16 py-10 min-h-[calc(100vh-96px)]">
-        {/* 제목 + 질문 등록 버튼 */}
-        <div className="flex justify-center relative items-center mb-6">
-          <h1 className="text-3xl font-bold text-blue-600">Q&A</h1>
+      <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
+        {/* 검색창 + 버튼 같은 줄 */}
+        <div className="relative flex justify-center mb-8">
           <div className="absolute right-0">
             <button
               onClick={() => {
-                if (!devMode && !isLoggedIn) {
+                if (!isLoggedIn) {
                   alert('로그인 후 질문을 등록할 수 있습니다.');
                   return;
                 }
@@ -78,10 +75,7 @@ const QnAListPage = () => {
               질문 등록
             </button>
           </div>
-        </div>
 
-        {/* 검색창 */}
-        <div className="flex justify-center mb-8">
           <div
             className="relative flex items-center w-full max-w-2xl border border-gray-300 rounded-md bg-white shadow-sm"
             ref={dropdownRef}
@@ -170,7 +164,7 @@ const QnAListPage = () => {
             return (
               <div
                 key={qna.questionNo}
-                onClick={() => navigate(`/community/qna/${qna.questionNo}`)} // ✅ 경로 수정
+                onClick={() => navigate(`/community/qna/${qna.questionNo}`)}
                 className="grid grid-cols-10 border-b py-3 min-h-[56px] text-sm text-center items-center cursor-pointer hover:bg-gray-50"
               >
                 <div className="col-span-1">{(page - 1) * pageSize + index + 1}</div>
@@ -182,9 +176,19 @@ const QnAListPage = () => {
                     <span className="text-gray-400">대기</span>
                   )}
                 </div>
-                <div className="col-span-1 text-yellow-500 text-sm flex justify-center items-center gap-0.5">
-                  {'★'.repeat(rating)}
-                  {'☆'.repeat(5 - rating)}
+                <div className="col-span-1 text-sm flex justify-center items-center gap-0.5">
+                  {qna.answerContents ? (
+                    rating > 0 ? (
+                      <span className="text-yellow-500">
+                        {'★'.repeat(rating)}
+                        {'☆'.repeat(5 - rating)}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 italic text-xs">아직 평점이 없어요</span>
+                    )
+                  ) : (
+                    '-'
+                  )}
                 </div>
                 <div className="col-span-1 text-gray-500 text-sm leading-none">
                   {qna.createDate?.substring(0, 10) || '날짜 없음'}

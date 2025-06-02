@@ -20,7 +20,7 @@ const NoticeListPage = () => {
   const navigate = useNavigate();
 
   const searchOptions = ['제목+내용', '제목', '내용'];
-  const pageSize = 7;
+  const pageSize = 10;
   const totalPages = Math.ceil(filteredNotices.length / pageSize);
   const pagedNotices = filteredNotices.slice((page - 1) * pageSize, page * pageSize);
 
@@ -61,11 +61,10 @@ const NoticeListPage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      {/* ✅ 콘텐츠 전체 넓힘 적용 */}
-      <main className="grow w-full px-16 py-10 min-h-[calc(100vh-96px)]">
+      {/* 콘텐츠 전체 넓힘 적용 */}
+      <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
         {/* 제목 */}
         <div className="flex justify-center items-center mb-6">
-          <h1 className="text-3xl font-bold text-blue-600">공지사항</h1>
         </div>
 
         {/* 검색창 */}

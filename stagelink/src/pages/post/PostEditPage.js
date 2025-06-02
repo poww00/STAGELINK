@@ -7,8 +7,9 @@ import Footer from '../../components/common/Footer';
 const PostEditPage = () => {
   const { postNo } = useParams();
   const navigate = useNavigate();
-  const devMode = false;     // false/true
-  const isLoggedIn = !!localStorage.getItem('accessToken');
+
+  const accessToken = localStorage.getItem('accessToken');
+  const isLoggedIn = !!accessToken;
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -16,13 +17,16 @@ const PostEditPage = () => {
   const [showList, setShowList] = useState([]);
   const [selectedShow, setSelectedShow] = useState('');
 
-  // 로그인 확인
+  // 로그인 확인 및 Axios 전역 헤더 설정
   useEffect(() => {
-    if (!devMode && !isLoggedIn) {
+    if (!isLoggedIn) {
       alert('로그인 후 수정이 가능합니다.');
       navigate('/login');
+      return;
     }
-  }, [devMode, isLoggedIn, navigate]);
+
+    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+  }, [isLoggedIn, accessToken, navigate]);
 
   // 기존 게시글 불러오기
   useEffect(() => {
@@ -36,11 +40,10 @@ const PostEditPage = () => {
         setSelectedShow(data.showNo || '');
       })
       .catch((err) => {
-        console.error('❌ 게시글 불러오기 실패:', err);
+        console.error('게시글 불러오기 실패:', err);
         alert('게시글 정보를 불러오지 못했습니다.');
       });
   }, [postNo]);
-
 
   // 공연 목록 불러오기
   useEffect(() => {
@@ -60,7 +63,7 @@ const PostEditPage = () => {
         setShowList(res.data.content || []);
       })
       .catch((err) => {
-        console.error('❌ 공연 목록 조회 실패:', err);
+        console.error('공연 목록 조회 실패:', err);
         alert('공연 정보를 불러오지 못했습니다.');
       });
   }, []);
@@ -79,19 +82,13 @@ const PostEditPage = () => {
     };
 
     axios
-      .put(`/api/community/posts/${postNo}`, updatedPost, {
-        headers: devMode
-          ? {}
-          : {
-              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-            },
-      })
+      .put(`/api/community/posts/${postNo}`, updatedPost)
       .then(() => {
         alert('게시글이 수정되었습니다.');
         navigate(`/community/posts/${postNo}`);
       })
       .catch((err) => {
-        console.error('❌ 글 수정 실패:', err);
+        console.error('글 수정 실패:', err);
         alert('글 수정 중 오류가 발생했습니다.');
       });
   };
@@ -100,8 +97,7 @@ const PostEditPage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      <main className="flex-grow w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* 게시글로 돌아가기 */}
+      <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
         <button
           onClick={() => navigate(`/community/posts/${postNo}`)}
           className="mb-6 text-sm text-blue-600 hover:underline"

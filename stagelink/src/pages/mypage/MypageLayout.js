@@ -6,17 +6,23 @@ import Footer from "../../components/common/Footer";
 const MypageLayout = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      {/* 헤더 */}
       <Header />
 
-      {/* 본문 */}
-      <div className="flex flex-1">
-        <div className="flex-1 p-8">
-          <Outlet />  {/* 페이지별 콘텐츠 */}
+      {/* 본문 영역: 콘텐츠 + 사이드바 */}
+      <div className="flex flex-1 px-0 py-10 gap-10 justify-center">
+        {/* 콘텐츠 영역 */}
+        <div className="max-w-[800px] w-full pr-2"> {/* 콘텐츠 너비 조절 */}
+          <Outlet /> {/* 페이지별 콘텐츠 */}
         </div>
-        <MypageSidebar />  {/* 사이드바 오른쪽 */}
+
+        {/* 사이드바 - 콘텐츠에 바짝 붙여서 오른쪽 */}
+        <div className="w-[200px] h-max sticky top-[20vh] self-start">
+          <MypageSidebar />
+        </div>
       </div>
 
-      
+      {/* 푸터 */}
       <Footer />
     </div>
   );
