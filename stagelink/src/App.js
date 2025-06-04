@@ -30,15 +30,6 @@ import MyCommentsPage from "./pages/mypage/MyCommentsPage";
 import MyQnaPage from "./pages/mypage/MyQnaPage";
 import MyActivityHome from "./components/mypage/MyActivityHome";
 
-// 마이페이지 내 활동 관련
-<Route path="/mypage">
-  <Route path="activity" element={<MyActivityHome />} />
-  <Route path="posts" element={<MyPostsPage />} />
-  <Route path="comments" element={<MyCommentsPage />} />
-  <Route path="qna" element={<MyQnaPage />} />
-</Route>
-
-
 
 function App() {
   return (
