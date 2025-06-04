@@ -5,7 +5,7 @@ const MypageSidebar = () => {
 
   const menu = [
     { path: "/mypage/reservations", label: "나의 예매 내역" },
-    { path: "/mypage/info", label: "내 정보 관리" },
+    { path: "/mypage/confirm-password", label: "내 정보 관리" },
     { path: "/mypage/activity", label: "내 활동" },
   ];
 
@@ -15,7 +15,7 @@ const MypageSidebar = () => {
       <div className="flex flex-col justify-center w-full">
         {/* 타이틀 */}
         <h2 className="text-xl font-bold text-gray-800 mb-6 text-left">
-          마이페이지
+          <Link to="/mypage">마이페이지</Link>
         </h2>
 
         {/* 메뉴 리스트 */}
