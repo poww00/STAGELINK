@@ -36,7 +36,6 @@ const StepPeopleDiscount = ({ showId, selectedSeats, date, time, onNext, onBack 
   return (
     <div className="relative h-full pb-24">
       {/* 타이틀 */}
-      <h2 className="text-lg font-bold mb-4">할인 선택</h2>
       {/* 선택 좌석 수 안내 */}
       <div className="text-sm text-gray-500 mb-2">
         총 선택한 좌석 수: <span className="font-semibold">{selectedSeats.length}</span>

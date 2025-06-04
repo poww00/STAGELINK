@@ -1,156 +1,109 @@
-import React from "react";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import React, { useRef } from "react";
 
 /**
- * StepPay - 예매 Step 3: 결제(카카오페이) 실행 컴포넌트
- * @param {Object} showInfo - 공연 정보 객체 (좌석 가격 등 포함)
- * @param {number} showId - 공연 ID
- * @param {Array} selectedSeats - 선택한 좌석 리스트 (예: ["VIP-1", "R-12"])
- * @param {string} date - 선택한 날짜
- * @param {string} time - 선택한 회차
- * @param {Object} discounts - 할인 정보 객체 (예: {normal: 1, patriot: 2, ...})
- * @param {function} onPaySuccess - 결제/예매 성공시 호출(결과 전달)
- * @param {function} onBack - 뒤로가기
+ * StepPay 컴포넌트
+ * - 포트원(아임포트) 결제창을 호출하여 사용자 결제를 처리
+ * - 결제 성공 시 imp_uid를 부모로 전달
+ * - 결제 실패 또는 사용자가 결제를 취소하면 onPayFail 호출
  */
 const StepPay = ({
-  showInfo,
-  showId,
-  selectedSeats,
-  date,
-  time,
-  discounts,
-  onPaySuccess,
-  onBack,
+  show,               // 공연 상세 정보 (좌석 가격 포함)
+  showInfo,           // 공연 제목 등 간단 정보
+  selectedSeats,      // 선택한 좌석 리스트 ["VIP-1", "R-3", ...]
+  onPaySuccess,       // 결제 성공 시 콜백 (imp_uid 전달)
+  onPayFail,          // 결제 실패 또는 취소 시 콜백
+  onBack,             // 뒤로가기 버튼 클릭 시 콜백
 }) => {
-  // userId를 JWT에서 동적으로 추출
-  let userId = null;
-  try {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      userId = jwtDecode(token).id;
-    }
-  } catch (e) {
-    userId = null;
-  }
 
-  // 실제 등급별 가격 (백엔드에서 받아옴)
+  /* 총 결제 금액 계산 */
   const seatPrices = {
-    VIP: showInfo.seatVipPrice,
-    R: showInfo.seatRPrice,
-    S: showInfo.seatSPrice,
+    VIP: show?.seatVipPrice,
+    R  : show?.seatRPrice,
+    S  : show?.seatSPrice,
+    A  : show?.seatAPrice,
   };
 
-  // [1] 결제 총액 계산: 선택 좌석 등급별 가격 합
+  // 좌석 등급을 기준으로 각 좌석의 가격을 합산하여 총액 계산
   const totalAmount = selectedSeats
-    .map(seat => {
-      const grade = seat.split("-")[0];
+    .map(s => {
+      const grade = typeof s === "string" ? s.split("-")[0] : s.grade;
       return seatPrices[grade] || 0;
     })
     .reduce((a, b) => a + b, 0);
 
-  // [2] 좌석 PK만 추출 (좌석 고유 ID만 모음)
-  const seatIdList = selectedSeats.map(seat => {
-    if (typeof seat === "string") {
-      const matched = seat.match(/\d+$/);
-      return matched ? Number(matched[0]) : NaN;
-    } else if (typeof seat === "object" && seat.seatId) {
-      return Number(seat.seatId);
-    }
-    return Number(seat);
-  });
+  /* 중복 클릭 방지용 락 처리 */
+  const lock = useRef(false);
 
-  /**
-   * [3] 결제 검증/예매(서버) 요청: 실패시 최대 3회, 2초 간격 재시도
-   * @param {Object} postData - 서버로 전달할 결제/예매 데이터
-   * @param {number} tryCount - 재시도 횟수
-   */
-  const verifyPaymentWithRetry = (postData, tryCount = 0) => {
-    axios.post("/api/payment/verify", postData)
-      .then(res => {
-        if (typeof onPaySuccess === "function") {
-          onPaySuccess(res.data); // 성공시 StepConfirm로
-        } else {
-          alert("onPaySuccess가 함수가 아닙니다! 타입=" + typeof onPaySuccess);
-        }
-      })
-      .catch(err => {
-        const errorMsg = err.response?.data || err.message;
-        // 결제 정보 미전달(비동기 이슈)면 재시도
-        if (
-          errorMsg.includes("존재하지 않는 결제 정보") &&
-          tryCount < 3
-        ) {
-          setTimeout(() => {
-            verifyPaymentWithRetry(postData, tryCount + 1);
-          }, 2000);
-        } else {
-          alert("결제 검증 실패: " + errorMsg);
-        }
-      });
+  // withLock(fn): lock을 걸고 일정 시간 동안 중복 실행 방지
+  const withLock = fn => (...args) => {
+    if (lock.current) return;     // 이미 락 걸려있으면 무시
+    lock.current = true;
+    fn(...args);                  // 원래 함수 실행
+    setTimeout(() => (lock.current = false), 800); // 0.8초 후 락 해제
   };
 
-  /**
-   * [4] 카카오페이 결제 요청 (IMP.request_pay)
-   * - 결제 성공시 서버 검증/예매 요청 → StepConfirm로 이동
-   */
-  const handleIamportPay = () => {
-    if (!window.IMP) {
-      alert("아임포트 JS 라이브러리가 로드되지 않았습니다.");
-      return;
+  /*아임포트 결제 콜백 */
+  const handleResult = withLock(rsp => {
+    if (rsp.success) {
+      // 성공 시 imp_uid를 문자열로 전달
+      onPaySuccess(String(rsp.imp_uid));
+    } else {
+      // 실패 또는 사용자 취소
+      alert("결제 실패: " + rsp.error_msg);
+      onPayFail();
     }
-    if (!userId) {
-      alert("로그인 후 이용해 주세요!");
-      return;
-    }
-    window.IMP.init("imp51662248"); // [테스트용: 실제론 본인 imp 코드 사용]
+  });
+
+  /** 💳 결제창 호출 */
+  const requestPay = (pg) => {
+    if (!window.IMP) return alert("아임포트 JS 로드 실패");
+    
+    // 가맹점 식별자 설정 (imp로 시작)
+    window.IMP.init("imp51662248");
+
+    // 결제 요청
     window.IMP.request_pay(
       {
-        pg: "kakaopay.TC0ONETIME",
-        pay_method: "card",
-        merchant_uid: `mid_${new Date().getTime()}`,
-        name: showInfo.title || "공연 예매",
-        amount: totalAmount,
-        buyer_email: "test@user.com",
-        buyer_name: "홍길동",
+        pg,                          // 결제사 (카카오페이, 토스 등)
+        pay_method: "card",          // 결제 수단
+        merchant_uid: `${pg}_${Date.now()}`, // 주문번호 (고유하게 생성)
+        name: showInfo?.title || showInfo?.name || "공연 예매", // 결제 항목명
+        amount: totalAmount,         // 결제 금액
+        buyer_email: "test@user.com", // 테스트용 구매자 이메일
+        buyer_name : "홍길동",        // 테스트용 구매자 이름
       },
-      function (rsp) {
-        if (rsp.success) {
-          // 결제 성공시 서버로 결제/예매 검증 요청
-          const postData = {
-            userId,
-            showId,
-            seatIdList,
-            date,
-            time,
-            totalAmount,
-            discounts,
-            impUid: rsp.imp_uid,
-            reservationDate: new Date().toISOString(),
-          };
-          verifyPaymentWithRetry(postData);
-        } else {
-          alert("결제 실패: " + rsp.error_msg);
-        }
-      }
+      handleResult                  // 결제 결과 콜백
     );
   };
 
   return (
     <div className="relative h-full pb-24">
-      {/* === 결제 버튼 === */}
-      <div className="h-full flex items-center justify-center">
+      {/* 중앙 결제 버튼 2개 */}
+      <div className="flex h-full flex-col items-center justify-center gap-4">
+        {/* 카카오페이 버튼 */}
         <button
-          className="w-full bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-4 rounded-xl text-lg flex items-center justify-center"
-          onClick={handleIamportPay}
+          className="flex w-full items-center justify-center rounded-xl border-2 border-[#FFEB00] bg-white py-4 text-lg font-bold text-[#FFEB00] hover:bg-yellow-50"
+          onClick={() => requestPay("kakaopay.TC0ONETIME")}
         >
-          <img src="/images/kakaopay.svg" alt="카카오페이" className="w-8 h-8 mr-3" />
-          카카오페이 테스트 결제
+          <img src="/images/kakaopay.svg" alt="카카오페이" className="mr-3 h-8 w-8" />
+          카카오페이 결제
+        </button>
+
+        {/* 토스페이 버튼 */}
+        <button
+          className="flex w-full items-center justify-center rounded-xl border-2 border-[#0064FF] bg-white py-4 text-lg font-bold text-[#0064FF] hover:bg-blue-50"
+          onClick={() => requestPay("tosspay.tosstest")}
+        >
+          <img src="/images/tosspay.svg" alt="토스페이" className="mr-3 h-8 w-8" />
+          토스페이 결제
         </button>
       </div>
-      {/* === 하단 고정: 뒤로가기 버튼 === */}
-      <div className="absolute bottom-0 left-0 w-full bg-white pt-3 px-1 border-t border-gray-200 flex justify-end gap-2">
-        <button onClick={onBack} className="px-4 py-2 border border-gray-300 rounded">뒤로가기</button>
+
+      {/* 뒤로가기 버튼 */}
+      <div className="absolute bottom-0 left-0 flex w-full justify-end border-t border-gray-200 bg-white px-1 pt-3">
+        <button onClick={onBack} className="rounded border px-4 py-2">
+          뒤로가기
+        </button>
       </div>
     </div>
   );
