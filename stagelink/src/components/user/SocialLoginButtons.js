@@ -13,7 +13,7 @@ const SocialLoginButtons = () => {
   return (
     <div className="mt-4 space-y-3 w-full max-w-sm mx-auto">
       <button
-        //onClick={redirectToNaverLogin}
+        onClick={() => alert("눌림!")}
         className="w-full flex items-center justify-center gap-2 border border-gray-300 bg-white 
           hover:bg-[#03C75A] hover:text-white hover:border-[#03C75A]
           text-gray-700 font-medium py-3.5 rounded-lg transition-all duration-200"

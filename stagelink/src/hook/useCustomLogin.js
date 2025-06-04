@@ -29,6 +29,7 @@ const useCustomLogin = () => {
                     login({
                         userId: decode.id,
                         nickname: decode.nickname,
+                        signupType: decode.signupType,
                     })
                 );
             } catch {

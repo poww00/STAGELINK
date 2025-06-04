@@ -17,7 +17,7 @@ import FindPwPage from "./pages/user/FindPwPage";
 import ResetPwPage from "./pages/user/ResetPwPage";
 import MypageLayout from "./pages/mypage/MypageLayout";
 import UserInfoPage from "./pages/mypage/UserInfoPage";
-import MypageHome from "./components/mypage/MypageHome";
+import MypageHome from "./pages/mypage/MypageHomePage.js";
 import RequireLoginRoute from "./components/common/RequiredLoginRoute";
 import KakaoCallback from "./pages/user/KakaoCallback";
 
@@ -34,8 +34,8 @@ import ChangePasswordPage from './pages/mypage/ChangePasswordPage.js';
 import AppInitializer from './components/common/AppInitializer';
 import ConfirmPasswordPage from './pages/mypage/ConfirmPasswordPage.js';
 import MyReservationList from './components/mypage/MyReservationList.js';
-import ReservationDetail from './components/mypage/MyReservationDetail.js';
-import RefundPreviewPage from './components/mypage/RefundPreviewPage.js';
+import ReservationDetail from './pages/mypage/MyReservationDetailPage.js';
+import RefundPreviewPage from './pages/mypage/RefundPreviewPage.js';
 
 
 function App() {

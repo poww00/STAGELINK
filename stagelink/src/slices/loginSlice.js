@@ -1,4 +1,3 @@
-// src/slices/loginSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
 const loginSlice = createSlice({
@@ -6,18 +5,21 @@ const loginSlice = createSlice({
   initialState: {
     isLogin: false,
     nickname: '',
-    userId: ''
+    userId: '',
+    signupType:'',
   },
   reducers: {
     login: (state, action) => {
       state.isLogin = true;
       state.nickname = action.payload.nickname;
       state.userId = action.payload.userId;
+      state.signupType = action.payload.signupType;
     },
     logout: (state) => {
       state.isLogin = false;
       state.nickname = '';
       state.userId = '';
+      state.signupType = '';
     }
   }
 });
