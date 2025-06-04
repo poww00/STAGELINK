@@ -6,7 +6,6 @@ import Footer from '../../components/common/Footer';
 
 const PostWritePage = () => {
   const navigate = useNavigate();
-  const devMode = false;    // true/false
   const isLoggedIn = !!localStorage.getItem('accessToken');
 
   const [title, setTitle] = useState('');
@@ -15,18 +14,26 @@ const PostWritePage = () => {
   const [showList, setShowList] = useState([]);
   const [selectedShow, setSelectedShow] = useState('');
 
+  // 로그인 상태 확인 및 Axios 헤더 설정
   useEffect(() => {
-    if (!devMode && !isLoggedIn) {
+    if (!isLoggedIn) {
       alert('로그인 후 글쓰기가 가능합니다.');
       navigate('/login');
+      return;
     }
-  }, [devMode, isLoggedIn, navigate]);
 
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  }, [isLoggedIn, navigate]);
+
+  // 공연 목록 불러오기 (상영중 공연만)
   useEffect(() => {
     axios
       .get('/api/show/titles', {
         params: {
-          states: [1], // 🎯 1 = 상영중
+          states: [1],
           page: 0,
           size: 100,
         },
@@ -43,11 +50,12 @@ const PostWritePage = () => {
         setShowList(res.data.content || []);
       })
       .catch((err) => {
-        console.error('❌ 공연 목록 조회 실패:', err);
+        console.error('공연 목록 조회 실패:', err);
         alert('공연 정보를 불러오지 못했습니다.');
       });
   }, []);
 
+  // 등록 버튼 클릭 시
   const handleSubmit = () => {
     if (!title.trim() || !content.trim() || !selectedShow) {
       alert('제목, 내용, 공연을 모두 입력해주세요.');
@@ -62,19 +70,13 @@ const PostWritePage = () => {
     };
 
     axios
-      .post('/api/community/posts', newPost, {
-        headers: devMode
-          ? {}
-          : {
-              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-            },
-      })
+      .post('/api/community/posts', newPost)
       .then(() => {
         alert('게시글이 등록되었습니다.');
         navigate('/community/posts');
       })
       .catch((err) => {
-        console.error('❌ 글 등록 실패:', err);
+        console.error('글 등록 실패:', err);
         alert('글 등록 중 오류가 발생했습니다.');
       });
   };
@@ -83,7 +85,7 @@ const PostWritePage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      <main className="flex-grow w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
         <button
           onClick={() => navigate('/community/posts')}
           className="mb-6 text-sm text-blue-600 hover:underline"
@@ -93,7 +95,7 @@ const PostWritePage = () => {
 
         <h1 className="text-2xl font-bold text-blue-700 mb-6">게시글 작성</h1>
 
-        {/* 🎭 공연 선택 */}
+        {/* 공연 선택 */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-1">공연 선택</label>
           <select

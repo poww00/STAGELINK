@@ -7,16 +7,41 @@ import Footer from '../../components/common/Footer';
 const PostDetailPage = () => {
   const { postNo } = useParams();
   const navigate = useNavigate();
+
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [commentContent, setCommentContent] = useState('');
   const [commentRating, setCommentRating] = useState(5);
   const [commentPage, setCommentPage] = useState(1);
-  const commentPageSize = 7;
+  const commentPageSize = 10;
 
-  const devMode = false;
-  const testMemberNo = 1003;
-  const isLoggedIn = !!localStorage.getItem('accessToken');
+  const accessToken = localStorage.getItem('accessToken');
+  const isLoggedIn = !!accessToken;
+
+  const parseJwt = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const loginMemberId = isLoggedIn ? parseJwt(accessToken)?.id : null;
+  const isAuthor = isLoggedIn && post?.member != null && Number(post.member) === loginMemberId;
+
+  useEffect(() => {
+    if (accessToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    }
+  }, [accessToken]);
 
   useEffect(() => {
     axios.get(`/api/community/posts/${postNo}`)
@@ -35,7 +60,7 @@ const PostDetailPage = () => {
   }, [postNo]);
 
   const handleSubmitComment = () => {
-    if (!devMode && !isLoggedIn) {
+    if (!isLoggedIn) {
       alert('로그인 후 이용해주세요.');
       return;
     }
@@ -49,15 +74,9 @@ const PostDetailPage = () => {
       postNo: parseInt(postNo),
       commentContent,
       commentRating,
-      nickname: '테스트사용자',
-      member: testMemberNo,
     };
 
-    const headers = devMode ? {} : {
-      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-    };
-
-    axios.post('/api/community/posts/comments', newComment, { headers })
+    axios.post('/api/community/posts/comments', newComment)
       .then(() => {
         setCommentContent('');
         setCommentRating(5);
@@ -85,16 +104,14 @@ const PostDetailPage = () => {
   };
 
   const handleReportComment = (commentNo) => {
-    if (!devMode && !isLoggedIn) {
+    if (!isLoggedIn) {
       alert('로그인 후 이용해주세요.');
       return;
     }
 
-    const headers = devMode ? {} : {
-      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-    };
-
-    axios.post(`/api/community/posts/comments/${commentNo}/report`, {}, { headers })
+    axios.post(`/api/community/posts/comments/${commentNo}/report`, {
+      reason: '부적절한 내용입니다.'
+    })
       .then(() => alert('댓글을 신고했습니다.'))
       .catch((err) => {
         console.error('댓글 신고 실패:', err);
@@ -103,23 +120,18 @@ const PostDetailPage = () => {
   };
 
   const handleReportPost = () => {
-    if (!devMode && !isLoggedIn) {
+    if (!isLoggedIn) {
       alert('로그인 후 이용해주세요.');
       return;
     }
 
-    const headers = devMode ? {} : {
-      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-    };
-
     const reportData = {
       postNo: post.postNo,
       suspectId: post.member,
-      reportedId: testMemberNo,
       reportReason: '부적절한 콘텐츠입니다.'
     };
 
-    axios.post(`/api/community/posts/${post.postNo}/report`, reportData, { headers })
+    axios.post(`/api/community/posts/${post.postNo}/report`, reportData)
       .then(() => alert('게시글을 신고했습니다.'))
       .catch((err) => {
         console.error('게시글 신고 실패:', err);
@@ -144,7 +156,6 @@ const PostDetailPage = () => {
   const totalCommentPages = Math.ceil(comments.length / commentPageSize);
   const pagedComments = comments.slice((commentPage - 1) * commentPageSize, commentPage * commentPageSize);
   const formattedDate = post?.postRegisterDate?.substring(0, 10);
-  const isAuthor = (devMode || isLoggedIn) && post?.member === testMemberNo;
 
   if (!post) {
     return (
@@ -161,7 +172,7 @@ const PostDetailPage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow w-full px-16 py-10 min-h-[calc(100vh-96px)]">
+      <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
         <button
           onClick={() => navigate('/community/posts')}
           className="text-blue-600 hover:underline text-sm mb-6"
@@ -222,7 +233,7 @@ const PostDetailPage = () => {
             )}
           </div>
 
-          {devMode || isLoggedIn ? (
+          {isLoggedIn ? (
             <>
               <div className="mb-2">
                 <label className="text-sm mr-2">평점</label>
@@ -232,7 +243,9 @@ const PostDetailPage = () => {
                   className="border rounded px-2 py-1 text-sm"
                 >
                   {[1, 2, 3, 4, 5].map((r) => (
-                    <option key={r} value={r}>{'★'.repeat(r)}</option>
+                    <option key={r} value={r}>
+                      {'★'.repeat(r)}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -257,7 +270,6 @@ const PostDetailPage = () => {
           )}
         </div>
 
-
         {/* 댓글 목록 */}
         <div className="border-t pt-6">
           <h2 className="text-lg font-semibold mb-4">댓글</h2>
@@ -267,7 +279,7 @@ const PostDetailPage = () => {
             <>
               <div className="space-y-4">
                 {pagedComments.map((comment) => {
-                  const canDelete = (devMode || isLoggedIn) && comment.member === testMemberNo;
+                  const canDelete = isLoggedIn && Number(comment.member) === loginMemberId;
 
                   return (
                     <div key={comment.commentNo} className="border p-3 rounded relative">
@@ -308,7 +320,6 @@ const PostDetailPage = () => {
                 })}
               </div>
 
-              {/* 페이지네이션 */}
               <div className="flex justify-center mt-6 space-x-1">
                 <button
                   onClick={() => setCommentPage((prev) => Math.max(prev - 1, 1))}
@@ -320,10 +331,11 @@ const PostDetailPage = () => {
                   <button
                     key={i + 1}
                     onClick={() => setCommentPage(i + 1)}
-                    className={`px-3 py-1 border rounded ${i + 1 === commentPage
-                      ? 'bg-blue-600 text-white'
-                      : 'text-blue-600 hover:bg-blue-100'
-                      }`}
+                    className={`px-3 py-1 border rounded ${
+                      i + 1 === commentPage
+                        ? 'bg-blue-600 text-white'
+                        : 'text-blue-600 hover:bg-blue-100'
+                    }`}
                   >
                     {i + 1}
                   </button>

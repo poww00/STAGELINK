@@ -25,6 +25,20 @@ import ShowDetailPage from "./pages/show/ShowDetailPage";
 import ActorDetailPage from "./pages/actor/ActorDetailPage";
 import SearchResultPage from "./pages/search/SearchResultPage";
 import PaymentStepperPage from "./pages/payment/PaymentStepperPage";
+import MyPostsPage from "./pages/mypage/MyPostsPage";
+import MyCommentsPage from "./pages/mypage/MyCommentsPage";
+import MyQnaPage from "./pages/mypage/MyQnaPage";
+import MyActivityHome from "./components/mypage/MyActivityHome";
+
+// 마이페이지 내 활동 관련
+<Route path="/mypage">
+  <Route path="activity" element={<MyActivityHome />} />
+  <Route path="posts" element={<MyPostsPage />} />
+  <Route path="comments" element={<MyCommentsPage />} />
+  <Route path="qna" element={<MyQnaPage />} />
+</Route>
+
+
 
 function App() {
   return (
@@ -64,14 +78,19 @@ function App() {
         {/* 카카오 콜백 처리 페이지 */}
         <Route path="/member/kakao" element={<KakaoCallback />} />
 
+
         {/* 마이페이지 레이아웃 - 인증이 필요한 경로를 RequireLoginRoute로 */}
-        <Route path="/mypage/:id" element={
+        <Route path="/mypage/*" element={
           <RequireLoginRoute>
           <MypageLayout />
           </RequireLoginRoute>
           }>
           <Route index element={<MypageHome />} />
           <Route path="info" element={<UserInfoPage />} />
+          <Route path="activity" element={<MyActivityHome />} />
+          <Route path="posts" element={<MyPostsPage />} />
+          <Route path="comments" element={<MyCommentsPage />} />
+          <Route path="qna" element={<MyQnaPage />} />
         </Route>
 
 

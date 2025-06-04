@@ -14,10 +14,9 @@ const PostListPage = () => {
   const [selectedShowName, setSelectedShowName] = useState('공연 전체');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 7;       // 7개의 게시물이 한 페이지에 나타남
+  const pageSize = 10;
   const navigate = useNavigate();
 
-  const devMode = false;        // true/false
   const isLoggedIn = !!localStorage.getItem('accessToken');
 
   const showStateMap = {
@@ -25,7 +24,13 @@ const PostListPage = () => {
     '종료': 2
   };
 
-  // 게시글 불러오기
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  }, []);
+
   const fetchPosts = async () => {
     try {
       let res;
@@ -42,12 +47,11 @@ const PostListPage = () => {
     }
   };
 
-  // 공연 제목 불러오기
   const fetchShowTitles = async () => {
     try {
       let stateValues = [];
       if (showState === '전체 공연') {
-        stateValues = [1, 2]; // 상영중 + 종료
+        stateValues = [1, 2];
       } else {
         const value = showStateMap[showState];
         if (value !== undefined) stateValues = [value];
@@ -103,14 +107,45 @@ const PostListPage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      <main className="grow w-full px-16 py-10 min-h-[calc(100vh-96px)]">
-        {/* 제목 + 작성 버튼 */}
-        <div className="flex justify-center relative items-center mb-6">
-          <h1 className="text-3xl font-bold text-blue-600">커뮤니티</h1>
+      <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
+        {/* 검색창 + 작성하기 버튼 */}
+        <div className="relative mb-6 flex items-center">
+          {/* 검색창: 약간 오른쪽으로 치우치게 */}
+          <div className="flex gap-4 pl-[230px]">
+            <select
+              value={showState}
+              onChange={(e) => setShowState(e.target.value)}
+              className="border px-3 py-1 text-sm rounded"
+            >
+              <option>전체 공연</option>
+              <option>상영중</option>
+              <option>종료</option>
+            </select>
+
+            <select
+              value={selectedShowName}
+              onChange={(e) => setSelectedShowName(e.target.value)}
+              className="border px-3 py-1 text-sm rounded"
+            >
+              {showOptions.map((name, idx) => (
+                <option key={idx} value={name}>{name}</option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              placeholder="제목+내용 검색"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="border px-3 py-1 text-sm rounded w-60"
+            />
+          </div>
+
+          {/* 작성하기 버튼: 오른쪽 끝에 고정 */}
           <div className="absolute right-0">
             <button
               onClick={() => {
-                if (!devMode && !isLoggedIn) {
+                if (!isLoggedIn) {
                   alert('로그인 후 글쓰기가 가능합니다.');
                   return;
                 }
@@ -121,37 +156,6 @@ const PostListPage = () => {
               작성하기
             </button>
           </div>
-        </div>
-
-        {/* 필터 */}
-        <div className="flex gap-4 justify-center mb-6">
-          <select
-            value={showState}
-            onChange={(e) => setShowState(e.target.value)}
-            className="border px-3 py-1 text-sm rounded"
-          >
-            <option>전체 공연</option>
-            <option>상영중</option>
-            <option>종료</option>
-          </select>
-
-          <select
-            value={selectedShowName}
-            onChange={(e) => setSelectedShowName(e.target.value)}
-            className="border px-3 py-1 text-sm rounded"
-          >
-            {showOptions.map((name, idx) => (
-              <option key={idx} value={name}>{name}</option>
-            ))}
-          </select>
-
-          <input
-            type="text"
-            placeholder="제목+내용 검색"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            className="border px-3 py-1 text-sm rounded w-60"
-          />
         </div>
 
         {/* 탭 메뉴 */}
