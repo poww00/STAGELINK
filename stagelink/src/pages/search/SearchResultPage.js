@@ -3,7 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import Header from "../../components/common/Header";
 import Footer from "../../components/common/Footer";
 
-// 1. 목데이터 배열(더 늘리고 싶으면 추가!)
+//  목데이터 배열
 const mockShows = [
   {
     id: 1,
@@ -222,18 +222,18 @@ const mockShows = [
 
 const SearchResultPage = () => {
   const [searchParams] = useSearchParams();
-  const keyword = searchParams.get("keyword") || "";
-  const [shows, setShows] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(0); // 0부터 시작
-  const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 20;
+  const keyword = searchParams.get("keyword") || ""; // URL ?keyword= 값 추출
+  const [shows, setShows] = useState([]);            // 화면에 보여질 공연 리스트
+  const [loading, setLoading] = useState(false);     // 로딩 상태
+  const [page, setPage] = useState(0);               // 현재 페이지 (0부터 시작)
+  const [totalPages, setTotalPages] = useState(1);   // 전체 페이지 수
+  const pageSize = 20;                               // 한 페이지당 아이템 수
 
-  // 목데이터로 검색/페이징 처리
+  /* 검색 & 페이징 처리 */
   useEffect(() => {
     setLoading(true);
 
-    // 2. JS로 검색어 포함 공연 필터링
+    // 1. 검색어로 공연명 필터링 (대소문자 무시)
     let filtered = mockShows;
     if (keyword.trim() !== "") {
       filtered = mockShows.filter((show) =>
@@ -241,77 +241,87 @@ const SearchResultPage = () => {
       );
     }
 
-    // 3. 페이징 계산
+    // 2. 페이지 단위로 자르기
     const start = page * pageSize;
     const paginated = filtered.slice(start, start + pageSize);
-    setShows(paginated);
-    setTotalPages(Math.ceil(filtered.length / pageSize) || 1);
+    setShows(paginated); // 현재 페이지 공연 리스트 설정
 
+    // 3. 총 페이지 수 계산
+    setTotalPages(Math.ceil(filtered.length / pageSize) || 1);
     setLoading(false);
   }, [keyword, page]);
 
-  // 엔터 등으로 새로운 검색이 들어오면 페이지 초기화
+  /* 검색어가 바뀌면 항상 첫 페이지로 리셋 */
   useEffect(() => {
     setPage(0);
   }, [keyword]);
 
+  /* 페이지 이동 핸들러 */
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < totalPages) setPage(newPage);
   };
 
+  /* 렌더링 */
   return (
     <>
       <Header />
       <div className="max-w-6xl mx-auto px-4 py-8 min-h-[60vh]">
+        {/*  검색어 타이틀 */}
         <h1 className="text-xl font-bold text-purple-600 mb-4">
           “{keyword}” 검색 결과
         </h1>
+
+        {/* 로딩 중 */}
         {loading && (
           <div className="text-center text-gray-400 py-10">검색 중...</div>
         )}
+
+        {/* 결과 없음 */}
         {!loading && shows.length === 0 && (
           <div className="text-center text-gray-500 py-10">
             검색 결과가 없습니다.
           </div>
         )}
+
+        {/*  검색 결과 리스트 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {shows.map((show) => (
             <Link
-                to={`/show/${show.id}`}
-                key={show.id}
-                className="bg-white rounded-2xl shadow p-0 flex flex-col overflow-hidden transition hover:shadow-xl border"
-                style={{ width: 240 }}
-                >
-                <img
-                    src={show.poster}
-                    alt={show.name}
-                    className="w-full h-72 object-cover"
-                />
-                <div className="p-4">
-                    <h3 className="font-bold text-lg mb-1 truncate">{show.name}</h3>
-                    <div className="text-sm text-gray-600 mb-1">
-                    {show.category}
-                    {show.age && (
-                        <>
-                        <span className="mx-1">·</span>
-                        {show.age}세 이상
-                        </>
-                    )}
-                    </div>
-                    {show.startDate && (
-                    <div className="text-xs text-gray-400">
-                        공연기간: {show.startDate} ~ {show.endDate || ""}
-                    </div>
-                    )}
+              to={`/show/${show.id}`} // 클릭 시 공연 상세로 이동
+              key={show.id}
+              className="bg-white rounded-2xl shadow p-0 flex flex-col overflow-hidden transition hover:shadow-xl border"
+              style={{ width: 240 }}
+            >
+              <img
+                src={show.poster}
+                alt={show.name}
+                className="w-full h-72 object-cover"
+              />
+              <div className="p-4">
+                <h3 className="font-bold text-lg mb-1 truncate">{show.name}</h3>
+                <div className="text-sm text-gray-600 mb-1">
+                  {show.category}
+                  {show.age && (
+                    <>
+                      <span className="mx-1">·</span>
+                      {show.age}세 이상
+                    </>
+                  )}
                 </div>
+                {show.startDate && (
+                  <div className="text-xs text-gray-400">
+                    공연기간: {show.startDate} ~ {show.endDate || ""}
+                  </div>
+                )}
+              </div>
             </Link>
-
-
           ))}
         </div>
+
         {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="flex justify-center mt-8 space-x-2">
+            {/* 이전 페이지 버튼 */}
             <button
               onClick={() => handlePageChange(page - 1)}
               disabled={page === 0}
@@ -319,6 +329,8 @@ const SearchResultPage = () => {
             >
               이전
             </button>
+
+            {/* 페이지 번호들 */}
             {[...Array(totalPages).keys()].map((p) => (
               <button
                 key={p}
@@ -332,6 +344,8 @@ const SearchResultPage = () => {
                 {p + 1}
               </button>
             ))}
+
+            {/* 다음 페이지 버튼 */}
             <button
               onClick={() => handlePageChange(page + 1)}
               disabled={page === totalPages - 1}

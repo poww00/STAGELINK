@@ -1,96 +1,70 @@
-// src/components/show/PosterInfo.js
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import MapModal from "../common/MapModal";
-import axios from "axios";
 
-/**
- * 공연 상세 상단 포스터 및 기본 정보 컴포넌트
- * @param {Object} show - 공연 정보(포스터, 공연명, 장소, 가격 등)
- */
 const PosterInfo = ({ show }) => {
-  // 지도 모달 열림 여부
   const [mapOpen, setMapOpen] = useState(false);
-  // 공연장 주소 상태
-  const [address, setAddress] = useState("");
+  const addr = show.locationAddress || "";
+  const rating = show.rating || 0;
+  const full = Math.floor(rating), half = rating - full >= .5 ? 1 : 0;
 
-  // 공연장 주소 정보 불러오기
-  useEffect(() => {
-    if (show && show.locationId) {
-      axios
-        .get(`/api/showlocation/${show.locationId}`)
-        .then((res) => setAddress(res.data.address))
-        .catch(() => setAddress(null));
-    }
-  }, [show]);
-
+  /* ★ max-w 로 폭 제한, ml-auto 로 왼쪽 정렬 */
   return (
-    <div className="flex flex-col lg:flex-row items-center gap-6 my-6 text-base">
-      {/* === 1. 포스터 이미지 === */}
+    <div className="my-6 flex max-w-[680px] flex-row items-start gap-8 text-base">
+      {/* 포스터 */}
       <img
         src={show.poster}
-        alt={show.title}
-        className="w-[208px] h-[288px] object-cover rounded-lg shadow-lg"
+        alt={show.name}
+        onError={e => (e.target.src = "/images/default-poster.png")}
+        className="h-[260px] w-[180px] rounded-lg border object-cover shadow"
       />
 
-      {/* === 2. 공연 정보 영역 === */}
-      <div className="flex-1 space-y-2">
-        {/* 공연명 */}
-        <h1 className="text-xl font-bold text-gray-800">{show.title}</h1>
+      {/* 정보 */}
+      <div className="mt-2 flex flex-1 flex-col gap-1">
+        <h1 className="mb-2 text-xl font-bold text-gray-800">{show.name}</h1>
 
-        {/* 장소(지도 모달) */}
-        <p className="text-gray-600 text-sm">
-          장소:{" "}
-          {address ? (
+        <p className="text-sm text-gray-600">
+          장소:&nbsp;
+          {show.locationName && addr ? (
             <span
-              className="text-blue-600 underline cursor-pointer"
               onClick={() => setMapOpen(true)}
+              className="cursor-pointer underline text-blue-600"
             >
               {show.locationName}
             </span>
           ) : (
-            <span className="text-gray-500">(등록되지 않음)</span>
+            <span className="text-gray-400">(등록되지 않음)</span>
           )}
         </p>
 
-        {/* 공연 기간 */}
-        <p className="text-gray-600 text-sm">
-          공연 기간: {show.startDate} ~ {show.endDate}
+        <p className="text-sm text-gray-600">
+          공연 기간: {show.periodStart || "-"} ~ {show.periodEnd || "-"}
         </p>
+        <p className="text-sm text-gray-600">관람 연령: {show.age}세 이상 관람 가능</p>
 
-        {/* 관람 연령 */}
-        <p className="text-gray-600 text-sm">
-          관람 연령: {show.ageLimit}세 이상 관람 가능
-        </p>
-
-        {/* 가격 정보 */}
-        <div className="border-t pt-2 mt-2 space-y-0.5">
-          <p className="text-xs">💰 가격 정보</p>
-          <p className="text-xs text-gray-700">
-            VIP석: {show.seatVipPrice?.toLocaleString()}원
-          </p>
-          <p className="text-xs text-gray-700">
-            R석: {show.seatRPrice?.toLocaleString()}원
-          </p>
-          <p className="text-xs text-gray-700">
-            S석: {show.seatSPrice?.toLocaleString()}원
-          </p>
+        {/* 가격 */}
+        <div className="mt-2 border-t pt-2">
+          <span className="text-xs">💰 가격 정보</span>
+          <div className="mt-1 flex gap-4">
+            {["VIP","R","S","A"].map(g => (
+              <span key={g} className="text-xs text-gray-700">
+                {g}석: {show[`seat${g}`]?.toLocaleString() ?? "-"}원
+              </span>
+            ))}
+          </div>
         </div>
 
-        {/* 평점 */}
-        <div className="mt-2">
-          <p className="text-yellow-500 text-base">
-            {/* 별점 UI */}
-            {"★".repeat(Math.floor(show.rating))}
-            {"☆".repeat(5 - Math.floor(show.rating))}
-            <span className="text-gray-600 text-xs ml-2">
-              ({show.rating?.toFixed(1)})
-            </span>
-          </p>
+        {/* 별점 */}
+        <div className="mt-2 flex items-center gap-2">
+          <span className="text-lg text-yellow-500">
+            {"★".repeat(full)}
+            {half ? "☆" : ""}
+            {"☆".repeat(5 - full - half)}
+          </span>
+          <span className="ml-2 text-xs text-gray-600">({rating.toFixed(1)})</span>
         </div>
       </div>
 
-      {/* === 3. 지도 모달 === */}
-      {mapOpen && <MapModal address={address} onClose={() => setMapOpen(false)} />}
+      {mapOpen && <MapModal address={addr} onClose={() => setMapOpen(false)} />}
     </div>
   );
 };

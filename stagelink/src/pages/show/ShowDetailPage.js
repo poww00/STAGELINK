@@ -1,73 +1,56 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-
-// 공통 레이아웃/컴포넌트
 import Header from "../../components/common/Header";
 import Footer from "../../components/common/Footer";
-import LoginModal from "../../components/common/LoginModal";
 import PosterInfo from "../../components/show/PosterInfo";
 import StickyBookingPanel from "../../components/show/StickyBookingPanel";
 import TabContent from "../../components/show/TabContent";
 import SeatModal from "../../components/show/SeatModal";
+import LoginModal from "../../components/common/LoginModal";
+import { jwtDecode } from "jwt-decode";
 
-// === 목데이터 (실제에선 API로 대체) ===
-const mockShowInfo = {
-  id: 1,
-  title: "뮤지컬 〈위키드〉 내한 공연(WICKED The Musical)",
-  poster: "/images/poster1.jpg",
-  locationId: 1,
-  locationName: "(재)경기문화재단",
-  startDate: "2025-05-01",
-  endDate: "2025-06-01",
-  ageLimit: 8,
-  seatVipPrice: 150000,
-  seatRPrice: 120000,
-  seatSPrice: 80000,
-  rating: 4.5,
-};
-
-/**
- * 공연 상세 페이지
- * - 공연 기본 정보, 포스터, 상세 탭, 찜하기/예매 패널, 좌석/결제 모달
- */
 const ShowDetailPage = () => {
-  // === 라우터 파라미터, 쿼리, 네비게이터 ===
-  const { id } = useParams();                       // 공연 ID(경로에서)
-  const [searchParams] = useSearchParams();         // 탭 정보(쿼리에서)
-  const tab = searchParams.get("tab") || "info";    // 활성 탭
-  const navigate = useNavigate();
+  const { id } = useParams(); // showInfoId
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab") || "info";
 
-  // === 상태값 관리 ===
-  const [showInfo, setShowInfo] = useState(null);       // 공연 상세정보(객체)
-  const [liked, setLiked] = useState(false);            // 찜하기 상태
-  const [loginModal, setLoginModal] = useState({ open: false, message: "" }); // 로그인 안내 모달
-  const [seatModalOpen, setSeatModalOpen] = useState(false); // 좌석선택/결제 모달
-  const [reserveInfo, setReserveInfo] = useState({ date: null, time: null }); // 예매일/회차
-
-  // userId: JWT에서 추출
+  // 상태값
+  const [showInfo, setShowInfo] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [seatModalOpen, setSeatModalOpen] = useState(false);
+  const [reserveInfo, setReserveInfo] = useState({ date: null, time: null, showNo: null });
+  const [loginModal, setLoginModal] = useState({ open: false, message: "" });
+  const [liked, setLiked] = useState(false);
   const [userId, setUserId] = useState(null);
+
+  // JWT에서 userId 추출
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
       try {
         setUserId(jwtDecode(token).id);
-      } catch (e) {
-        setUserId(null);
-      }
+      } catch (e) { setUserId(null); }
     } else {
       setUserId(null);
     }
   }, []);
 
-  // === 공연 상세정보 불러오기 (mount/ID 변경시) ===
+  // 공연 상세 정보
   useEffect(() => {
-    // 실제 API라면 여기서 showInfo를 axios로 받아옴
-    setShowInfo(mockShowInfo);
+    axios.get(`/api/showinfo/${id}`)
+      .then(res => setShowInfo(res.data))
+      .catch(() => setShowInfo(null));
   }, [id]);
 
-  // === 현재 유저의 찜 여부 조회 ===
+  // 회차(날짜/시간) 리스트 (상태 0,1만 반환)
+  useEffect(() => {
+    axios.get(`/api/shows/byShowInfo/${id}`)
+      .then(res => setSessions(res.data))
+      .catch(() => setSessions([]));
+  }, [id]);
+
+  // 찜 여부
   useEffect(() => {
     if (id && userId) {
       axios
@@ -77,10 +60,10 @@ const ShowDetailPage = () => {
     }
   }, [id, userId]);
 
-  // === 안내 모달 열기 ===
+  // 로그인 안내
   const openLoginModal = (message) => setLoginModal({ open: true, message });
 
-  // === 찜하기/취소 버튼 클릭시 ===
+  // 찜하기/취소
   const handleLike = () => {
     if (!userId) {
       openLoginModal("로그인이 필요한 서비스입니다. 로그인 해주세요!");
@@ -105,59 +88,72 @@ const ShowDetailPage = () => {
     }
   };
 
-  // === 예매하기(좌석 선택 모달 열기) ===
-  const handleReserve = (date, time) => {
-    setReserveInfo({ date, time });
+  // 예매(좌석 모달 오픈)
+  const handleReserve = (date, time, showNo) => {
+    setReserveInfo({ date, time, showNo });
     setSeatModalOpen(true);
   };
 
-  // === 공연 정보 없으면 로딩 메시지 ===
+  // 날짜별로 회차 그룹핑
+  const sessionGroups = sessions.reduce((acc, session) => {
+    const dateStr = session.startTime.slice(0, 10);
+    if (!acc[dateStr]) acc[dateStr] = [];
+    acc[dateStr].push(session);
+    return acc;
+  }, {});
+
   if (!showInfo) return <div className="text-center py-20">공연 정보를 불러오는 중입니다...</div>;
 
-  // === 실제 렌더 ===
-  return (
+   return (
     <>
       <Header />
-      <div className="relative max-w-7xl mx-auto px-4 py-10">
-        {/* === 우측 고정 예매/찜 패널 === */}
-        <div
-          className="hidden lg:block fixed z-40"
-          style={{ top: "180px", left: "calc(50% + 300px)", width: "300px" }}
-        >
-          <StickyBookingPanel
-            showId={id}
-            onLike={handleLike}
-            onReserve={handleReserve}
-            liked={liked}
-            userId={userId}
-            openLoginModal={openLoginModal}
-          />
-        </div>
-        {/* === 공연 포스터/정보/탭 === */}
-        <div className="lg:pr-[340px]">
+
+      {/* ★ grid : 768px 이상에서 [본문 680px | 패널 340px] */}
+      <div className="relative mx-auto grid max-w-[1052px] gap-8 px-4 py-10
++               justify-center
++               lg:grid-cols-[680px_340px]">
+        {/* ─── 왼쪽 본문 ─── */}
+        <div>
           <PosterInfo show={showInfo} />
-          <div className="mt-12">
+          <div className="mt-8">
             <TabContent tab={tab} showId={id} />
           </div>
         </div>
+
+        {/* ─── 오른쪽 고정 패널 ─── */}
+        <div className="relative">
+          <div className="sticky top-[120px]">
+            <StickyBookingPanel
+              sessionGroups={sessionGroups}
+              onReserve={handleReserve}
+              onLike={handleLike}
+              liked={liked}
+              userId={userId}
+              openLoginModal={openLoginModal}
+            />
+          </div>
+        </div>
       </div>
-      {/* === 로그인 안내 모달 === */}
+
+      {/* (SeatModal · LoginModal 그대로) */}
+      {seatModalOpen && (
+        <SeatModal
+          show={sessions.find(s => s.id === reserveInfo.showNo)}
+          showId={reserveInfo.showNo}
+          date={reserveInfo.date}
+          time={reserveInfo.time}
+          onClose={() => setSeatModalOpen(false)}
+          userId={userId}
+          showInfo={showInfo}
+        />
+      )}
       {loginModal.open && (
         <LoginModal
           message={loginModal.message}
           onClose={() => setLoginModal({ open: false, message: "" })}
         />
       )}
-      {/* === 좌석/할인/결제/완료 모달 === */}
-      {seatModalOpen && (
-        <SeatModal
-          showInfo={showInfo}   // 실제 공연 정보 객체 전체 전달!
-          showId={id}
-          date={reserveInfo.date}
-          time={reserveInfo.time}
-          onClose={() => setSeatModalOpen(false)}
-        />
-      )}
+
       <Footer />
     </>
   );
