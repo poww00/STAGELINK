@@ -110,12 +110,12 @@ const PostListPage = () => {
       <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
         {/* 검색창 + 작성하기 버튼 */}
         <div className="relative mb-6 flex items-center">
-          {/* 검색창: 약간 오른쪽으로 치우치게 */}
+          {/* 검색창: 가운데에서 약간 오른쪽으로 */}
           <div className="flex gap-4 pl-[230px]">
             <select
               value={showState}
               onChange={(e) => setShowState(e.target.value)}
-              className="border px-3 py-1 text-sm rounded"
+              className="border px-3 py-1.5 text-sm rounded"
             >
               <option>전체 공연</option>
               <option>상영중</option>
@@ -125,7 +125,7 @@ const PostListPage = () => {
             <select
               value={selectedShowName}
               onChange={(e) => setSelectedShowName(e.target.value)}
-              className="border px-3 py-1 text-sm rounded"
+              className="border px-3 py-1.5 text-sm rounded"
             >
               {showOptions.map((name, idx) => (
                 <option key={idx} value={name}>{name}</option>
@@ -137,7 +137,7 @@ const PostListPage = () => {
               placeholder="제목+내용 검색"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
-              className="border px-3 py-1 text-sm rounded w-60"
+              className="border px-3 py-1.5 text-sm rounded w-64"
             />
           </div>
 

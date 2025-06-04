@@ -61,6 +61,7 @@ const QnAListPage = () => {
       <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
         {/* 검색창 + 버튼 같은 줄 */}
         <div className="relative flex justify-center mb-8">
+          {/* 질문 등록 버튼 */}
           <div className="absolute right-0">
             <button
               onClick={() => {
@@ -76,8 +77,9 @@ const QnAListPage = () => {
             </button>
           </div>
 
+          {/* 검색창 */}
           <div
-            className="relative flex items-center w-full max-w-2xl border border-gray-300 rounded-md bg-white shadow-sm"
+            className="relative flex items-center w-full max-w-[700px] border border-gray-300 rounded-md bg-white shadow-sm"
             ref={dropdownRef}
           >
             <div className="relative">
