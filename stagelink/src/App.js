@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from "./pages/Home/HomePage";
-
 import PostListPage from './pages/post/PostListPage';
 import PostDetailPage from './pages/post/PostDetailPage';
 import PostWritePage from './pages/post/PostWritePage';
@@ -18,9 +17,10 @@ import FindPwPage from "./pages/user/FindPwPage";
 import ResetPwPage from "./pages/user/ResetPwPage";
 import MypageLayout from "./pages/mypage/MypageLayout";
 import UserInfoPage from "./pages/mypage/UserInfoPage";
-import MypageHome from "./components/mypage/MypageHome";
+import MypageHome from "./pages/mypage/MypageHomePage.js";
 import RequireLoginRoute from "./components/common/RequiredLoginRoute";
 import KakaoCallback from "./pages/user/KakaoCallback";
+
 import ShowDetailPage from "./pages/show/ShowDetailPage";
 import ActorDetailPage from "./pages/actor/ActorDetailPage";
 import SearchResultPage from "./pages/search/SearchResultPage";
@@ -30,17 +30,25 @@ import MyCommentsPage from "./pages/mypage/MyCommentsPage";
 import MyQnaPage from "./pages/mypage/MyQnaPage";
 import MyActivityHome from "./components/mypage/MyActivityHome";
 
+import ChangePasswordPage from './pages/mypage/ChangePasswordPage.js';
+import AppInitializer from './components/common/AppInitializer';
+import ConfirmPasswordPage from './pages/mypage/ConfirmPasswordPage.js';
+import MyReservationList from './pages/mypage/MyReservationListPage.js';
+import ReservationDetail from './pages/mypage/MyReservationDetailPage.js';
+import RefundPreviewPage from './pages/mypage/RefundPreviewPage.js';
+
 
 function App() {
-  return (
+  return (  
     <Router>
+      <AppInitializer />
       <Routes>
         <Route path="/" element={<HomePage />} />
+
         <Route path="/shows/:id" element={<ShowDetailPage />} />
         <Route path="/actors/:id" element={<ActorDetailPage />} />
         <Route path="/search" element={<SearchResultPage />} />
         <Route path="/payment/stepper" element={<PaymentStepperPage />} />
-
         <Route path="/community/posts" element={<PostListPage />} />
         <Route path="/community/posts/:postNo" element={<PostDetailPage />} />
         <Route path="/community/posts/write" element={<PostWritePage />} />
@@ -71,17 +79,26 @@ function App() {
 
 
         {/* 마이페이지 레이아웃 - 인증이 필요한 경로를 RequireLoginRoute로 */}
+
         <Route path="/mypage/*" element={
           <RequireLoginRoute>
           <MypageLayout />
           </RequireLoginRoute>
           }>
           <Route index element={<MypageHome />} />
+          <Route path="confirm-password" element={<ConfirmPasswordPage />} />
           <Route path="info" element={<UserInfoPage />} />
+
           <Route path="activity" element={<MyActivityHome />} />
           <Route path="posts" element={<MyPostsPage />} />
           <Route path="comments" element={<MyCommentsPage />} />
           <Route path="qna" element={<MyQnaPage />} />
+
+          <Route path="change-password" element={<ChangePasswordPage />} />
+          <Route path="reservations" element={<MyReservationList />} />
+          <Route path="reservations/:reservationId" element={<ReservationDetail />} />
+          <Route path="refunds/preview/:reservationId" element={<RefundPreviewPage />} />
+
         </Route>
 
 
