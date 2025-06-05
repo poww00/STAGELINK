@@ -5,19 +5,23 @@ import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 
 const PostDetailPage = () => {
+  // URL에서 postNo 추출
   const { postNo } = useParams();
   const navigate = useNavigate();
 
-  const [post, setPost] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [commentContent, setCommentContent] = useState('');
-  const [commentRating, setCommentRating] = useState(5);
-  const [commentPage, setCommentPage] = useState(1);
-  const commentPageSize = 10;
+  // 상태 변수 정의
+  const [post, setPost] = useState(null);               // 게시글 정보
+  const [comments, setComments] = useState([]);         // 댓글 목록
+  const [commentContent, setCommentContent] = useState(''); // 댓글 내용
+  const [commentRating, setCommentRating] = useState(5);    // 댓글 평점
+  const [commentPage, setCommentPage] = useState(1);        // 현재 댓글 페이지
+  const commentPageSize = 10;                               // 댓글 페이지당 개수
 
+  // 토큰 가져오기 및 로그인 여부 판단
   const accessToken = localStorage.getItem('accessToken');
   const isLoggedIn = !!accessToken;
 
+  // JWT 토큰 파싱 함수
   const parseJwt = (token) => {
     try {
       const base64Url = token.split('.')[1];
@@ -34,21 +38,26 @@ const PostDetailPage = () => {
     }
   };
 
+  // 로그인 사용자 정보
   const loginMemberId = isLoggedIn ? parseJwt(accessToken)?.id : null;
+  const memberState = isLoggedIn ? parseJwt(accessToken)?.memberState : null;
   const isAuthor = isLoggedIn && post?.member != null && Number(post.member) === loginMemberId;
 
+  // Axios 전역 헤더 설정
   useEffect(() => {
     if (accessToken) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     }
   }, [accessToken]);
 
+  // 게시글 정보 불러오기
   useEffect(() => {
     axios.get(`/api/community/posts/${postNo}`)
       .then((res) => setPost(res.data))
       .catch((err) => console.error('게시글 조회 실패:', err));
   }, [postNo]);
 
+  // 댓글 목록 불러오기
   const fetchComments = () => {
     axios.get(`/api/community/posts/comments/${postNo}`)
       .then((res) => setComments(res.data))
@@ -59,9 +68,15 @@ const PostDetailPage = () => {
     fetchComments();
   }, [postNo]);
 
+  // 댓글 등록
   const handleSubmitComment = () => {
     if (!isLoggedIn) {
       alert('로그인 후 이용해주세요.');
+      return;
+    }
+
+    if (memberState === 'BLOCKED') {
+      alert('현재 댓글 작성 권한이 제한된 상태입니다.');
       return;
     }
 
@@ -89,6 +104,7 @@ const PostDetailPage = () => {
       });
   };
 
+  // 댓글 삭제
   const handleDeleteComment = (commentNo) => {
     if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
 
@@ -103,6 +119,7 @@ const PostDetailPage = () => {
       });
   };
 
+  // 댓글 신고
   const handleReportComment = (commentNo) => {
     if (!isLoggedIn) {
       alert('로그인 후 이용해주세요.');
@@ -119,6 +136,7 @@ const PostDetailPage = () => {
       });
   };
 
+  // 게시글 신고
   const handleReportPost = () => {
     if (!isLoggedIn) {
       alert('로그인 후 이용해주세요.');
@@ -139,6 +157,7 @@ const PostDetailPage = () => {
       });
   };
 
+  // 게시글 삭제
   const handleDeletePost = () => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
 
@@ -153,11 +172,14 @@ const PostDetailPage = () => {
       });
   };
 
+  // 댓글 페이징 계산
   const totalCommentPages = Math.ceil(comments.length / commentPageSize);
   const pagedComments = comments.slice((commentPage - 1) * commentPageSize, commentPage * commentPageSize);
+
   const formattedDate = post?.postRegisterDate?.substring(0, 10);
 
   if (!post) {
+    // 게시글 로딩 중 화면
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
@@ -172,23 +194,27 @@ const PostDetailPage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
+      <main className="grow w-[1000px] mx-auto py-6 min-h-[calc(100vh-96px)]">
+        {/* 목록으로 돌아가기 버튼 */}
         <button
           onClick={() => navigate('/community/posts')}
-          className="text-blue-600 hover:underline text-sm mb-6"
+          className="text-blue-600 hover:underline text-sm mb-4"
         >
           ← 목록으로 돌아가기
         </button>
 
+        {/* 게시글 제목 */}
         <h1 className="text-2xl font-bold text-blue-700 mb-2">{post.postTitle}</h1>
 
+        {/* 공연명 표시 */}
         {post.showName && (
-          <div className="mb-4 text-blue-500 text-sm font-medium">
-            🎭 관련 공연: {post.showName}
+          <div className="mb-2 text-blue-500 text-sm font-medium">
+            관련 공연: {post.showName}
           </div>
         )}
 
-        <div className="flex justify-between items-center text-sm text-gray-500 border-b pb-2 mb-4">
+        {/* 작성자 정보 및 신고 버튼 */}
+        <div className="flex justify-between items-center text-sm text-gray-500 border-b pb-2 mb-3">
           <span>작성자: {post.nickname}</span>
           <div className="flex items-center gap-4">
             <span>{formattedDate}</span>
@@ -201,68 +227,75 @@ const PostDetailPage = () => {
           </div>
         </div>
 
-        <div className="text-yellow-500 text-sm mb-4">
+        {/* 게시글 평점 */}
+        <div className="text-yellow-500 text-sm mb-3">
           {'★'.repeat(post.postRating || 0)}
           {'☆'.repeat(5 - (post.postRating || 0))}
         </div>
 
-        <div className="whitespace-pre-wrap leading-relaxed text-gray-800 text-base mb-10">
+        {/* 게시글 본문 */}
+        <div className="whitespace-pre-wrap leading-relaxed text-gray-800 text-base mb-4">
           {post.postContent}
         </div>
 
-        {/* 댓글 작성 */}
-        <div className="mb-10 border-t pt-6">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-semibold">댓글 쓰기</h2>
-            {isAuthor && (
-              <div className="text-sm space-x-2">
-                <button
-                  onClick={() => navigate(`/community/posts/edit/${post.postNo}`)}
-                  className="text-blue-600 hover:underline"
-                >
-                  수정하기
-                </button>
-                <span className="text-gray-400">|</span>
-                <button
-                  onClick={handleDeletePost}
-                  className="text-red-500 hover:underline"
-                >
-                  삭제하기
-                </button>
-              </div>
-            )}
+        {/* 수정/삭제 버튼 - 본문 하단 오른쪽 */}
+        {isAuthor && (
+          <div className="flex justify-end mb-4 space-x-3">
+            <button
+              onClick={() => navigate(`/community/posts/edit/${post.postNo}`)}
+              className="text-blue-600 hover:underline text-sm"
+            >
+              수정하기
+            </button>
+            <span className="text-gray-400">|</span>
+            <button
+              onClick={handleDeletePost}
+              className="text-red-500 hover:underline text-sm"
+            >
+              삭제하기
+            </button>
           </div>
+        )}
 
+        {/* 댓글 작성 영역 */}
+        <div className="mb-6 border-t pt-4">
+          <h2 className="text-lg font-semibold mb-2">댓글 쓰기</h2>
           {isLoggedIn ? (
-            <>
-              <div className="mb-2">
-                <label className="text-sm mr-2">평점</label>
-                <select
-                  value={commentRating}
-                  onChange={(e) => setCommentRating(parseInt(e.target.value))}
-                  className="border rounded px-2 py-1 text-sm"
+            memberState === 'BLOCKED' ? (
+              <p className="text-sm text-red-500 mt-2">
+                현재 댓글 작성 권한이 제한된 상태입니다.
+              </p>
+            ) : (
+              <>
+                <div className="mb-2">
+                  <label className="text-sm mr-2">평점</label>
+                  <select
+                    value={commentRating}
+                    onChange={(e) => setCommentRating(parseInt(e.target.value))}
+                    className="border rounded px-2 py-1 text-sm"
+                  >
+                    {[1, 2, 3, 4, 5].map((r) => (
+                      <option key={r} value={r}>
+                        {'★'.repeat(r)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <textarea
+                  value={commentContent}
+                  onChange={(e) => setCommentContent(e.target.value)}
+                  placeholder="댓글 내용을 입력하세요 (최대 500자)"
+                  maxLength={500}
+                  className="w-full border rounded p-2 mb-2 text-sm"
+                />
+                <button
+                  onClick={handleSubmitComment}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >
-                  {[1, 2, 3, 4, 5].map((r) => (
-                    <option key={r} value={r}>
-                      {'★'.repeat(r)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <textarea
-                value={commentContent}
-                onChange={(e) => setCommentContent(e.target.value)}
-                placeholder="댓글 내용을 입력하세요 (최대 500자)"
-                maxLength={500}
-                className="w-full border rounded p-2 mb-2 text-sm"
-              />
-              <button
-                onClick={handleSubmitComment}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                등록하기
-              </button>
-            </>
+                  등록하기
+                </button>
+              </>
+            )
           ) : (
             <p className="text-sm text-gray-500 mt-2">
               로그인 후 댓글을 작성하실 수 있습니다.
@@ -271,8 +304,8 @@ const PostDetailPage = () => {
         </div>
 
         {/* 댓글 목록 */}
-        <div className="border-t pt-6">
-          <h2 className="text-lg font-semibold mb-4">댓글</h2>
+        <div className="border-t pt-4">
+          <h2 className="text-lg font-semibold mb-3">댓글</h2>
           {comments.length === 0 ? (
             <p className="text-gray-500 text-sm">등록된 댓글이 없습니다.</p>
           ) : (
@@ -320,7 +353,8 @@ const PostDetailPage = () => {
                 })}
               </div>
 
-              <div className="flex justify-center mt-6 space-x-1">
+              {/* 댓글 페이징 */}
+              <div className="flex justify-center mt-5 space-x-1">
                 <button
                   onClick={() => setCommentPage((prev) => Math.max(prev - 1, 1))}
                   className="px-3 py-1 border rounded text-blue-600 hover:bg-blue-100"
