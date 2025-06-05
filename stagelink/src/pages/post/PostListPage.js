@@ -109,13 +109,13 @@ const PostListPage = () => {
 
       <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
         {/* 검색창 + 작성하기 버튼 */}
-        <div className="relative mb-6 flex items-center">
-          {/* 검색창: 가운데에서 약간 오른쪽으로 */}
-          <div className="flex gap-4 pl-[230px]">
+        <div className="relative mb-6 flex justify-center items-center">
+          {/* 가운데 정렬된 검색바 */}
+          <div className="flex gap-4">
             <select
               value={showState}
               onChange={(e) => setShowState(e.target.value)}
-              className="border px-3 py-1.5 text-sm rounded"
+              className="border px-3 py-1.5 text-sm rounded w-[130px]"
             >
               <option>전체 공연</option>
               <option>상영중</option>
@@ -125,10 +125,12 @@ const PostListPage = () => {
             <select
               value={selectedShowName}
               onChange={(e) => setSelectedShowName(e.target.value)}
-              className="border px-3 py-1.5 text-sm rounded"
+              className="border px-3 py-1.5 text-sm rounded w-[240px]"
             >
               {showOptions.map((name, idx) => (
-                <option key={idx} value={name}>{name}</option>
+                <option key={idx} value={name} title={name}>
+                  {name.length > 30 ? `${name.slice(0, 30)}...` : name}
+                </option>
               ))}
             </select>
 
@@ -141,7 +143,7 @@ const PostListPage = () => {
             />
           </div>
 
-          {/* 작성하기 버튼: 오른쪽 끝에 고정 */}
+          {/* 오른쪽 끝에 작성하기 버튼 고정 */}
           <div className="absolute right-0">
             <button
               onClick={() => {
