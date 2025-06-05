@@ -15,6 +15,7 @@ const QnAListPage = () => {
   const [searchText, setSearchText] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchType, setSearchType] = useState('질문');
+  const [showModal, setShowModal] = useState(false); // 로그인 필요 모달 상태
   const pageSize = 10;
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -55,7 +56,7 @@ const QnAListPage = () => {
   const pagedQnas = filteredQnas.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen relative">
       <Header />
 
       <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
@@ -66,7 +67,7 @@ const QnAListPage = () => {
             <button
               onClick={() => {
                 if (!isLoggedIn) {
-                  alert('로그인 후 질문을 등록할 수 있습니다.');
+                  setShowModal(true); // 로그인 필요 모달 표시
                   return;
                 }
                 navigate('/community/qna/write');
@@ -231,6 +232,22 @@ const QnAListPage = () => {
       </main>
 
       <Footer />
+
+      {/* 로그인 필요 모달 */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+            <p className="text-lg font-semibold mb-4">로그인이 필요합니다</p>
+            <p className="text-sm text-gray-600 mb-6">로그인 후 질문을 등록할 수 있습니다.</p>
+            <button
+              onClick={() => setShowModal(false)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

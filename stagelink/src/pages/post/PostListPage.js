@@ -14,6 +14,7 @@ const PostListPage = () => {
   const [selectedShowName, setSelectedShowName] = useState('공연 전체');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [page, setPage] = useState(1);
+  const [showModal, setShowModal] = useState(false); // 모달 상태
   const pageSize = 10;
   const navigate = useNavigate();
 
@@ -104,7 +105,7 @@ const PostListPage = () => {
   const pagedPosts = filteredPosts.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen relative">
       <Header />
 
       <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
@@ -148,7 +149,7 @@ const PostListPage = () => {
             <button
               onClick={() => {
                 if (!isLoggedIn) {
-                  alert('로그인 후 글쓰기가 가능합니다.');
+                  setShowModal(true); // 로그인 안 되어있으면 모달 열기
                   return;
                 }
                 navigate('/community/posts/write');
@@ -234,6 +235,22 @@ const PostListPage = () => {
       </main>
 
       <Footer />
+
+      {/* 로그인 모달 */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+            <p className="text-lg font-semibold mb-4">로그인이 필요합니다</p>
+            <p className="text-sm text-gray-600 mb-6">로그인 후 글쓰기가 가능합니다.</p>
+            <button
+              onClick={() => setShowModal(false)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
