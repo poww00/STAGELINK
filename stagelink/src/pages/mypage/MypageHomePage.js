@@ -40,7 +40,8 @@ const MypageHome = () => {
 
     fetchMyLikes()
       .then(data => {
-        setLikedShows(data.slice(0, 4));
+        console.log("[찜한 공연 리스트] 서버에서 받아온 데이터:", data); 
+        setLikedShows(data);
       })
       .catch(err => {
         console.error("찜한 공연 조회 실패", err);
@@ -85,7 +86,9 @@ const MypageHome = () => {
 
       {/* 찜한 공연 */}
       <section>
-        <CarouselLikedShowList title="찜한 공연" shows={likedShows} />
+        <CarouselLikedShowList title="찜한 공연" 
+        shows={likedShows} 
+        setShows={setLikedShows} />
       </section>
     </div>
   );
