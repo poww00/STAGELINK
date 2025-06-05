@@ -30,6 +30,13 @@ import MyCommentsPage from "./pages/mypage/MyCommentsPage";
 import MyQnaPage from "./pages/mypage/MyQnaPage";
 import MyActivityHome from "./components/mypage/MyActivityHome";
 
+import ChangePasswordPage from './pages/mypage/ChangePasswordPage.js';
+import AppInitializer from './components/common/AppInitializer';
+import ConfirmPasswordPage from './pages/mypage/ConfirmPasswordPage.js';
+import MyReservationList from './pages/mypage/MyReservationListPage.js';
+import ReservationDetail from './pages/mypage/MyReservationDetailPage.js';
+import RefundPreviewPage from './pages/mypage/RefundPreviewPage.js';
+
 
 import ChangePasswordPage from './pages/mypage/ChangePasswordPage.js';
 import AppInitializer from './components/common/AppInitializer';

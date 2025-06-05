@@ -63,14 +63,21 @@ const NoticeListPage = () => {
 
       {/* 콘텐츠 전체 넓힘 적용 */}
       <main className="grow w-[1000px] mx-auto py-10 min-h-[calc(100vh-96px)]">
-        {/* 제목 */}
-        <div className="flex justify-center items-center mb-6">
-        </div>
+        {/* 검색창 + 버튼 같은 줄 */}
+        <div className="relative flex justify-center mb-8">
+          <div className="absolute right-0">
+            <button
+              onClick={() => {
+                alert('공지사항은 관리자만 등록할 수 있습니다.');
+              }}
+              className="bg-blue-600 text-white text-sm px-5 py-2.5 rounded hover:bg-blue-700 transition duration-150"
+            >
+              작성하기
+            </button>
+          </div>
 
-        {/* 검색창 */}
-        <div className="flex justify-center mb-8">
           <div
-            className="relative flex items-center w-full max-w-2xl border border-gray-300 rounded-md bg-white shadow-sm"
+            className="relative flex items-center w-full max-w-[700px] border border-gray-300 rounded-md bg-white shadow-sm"
             ref={dropdownRef}
           >
             <div className="relative">
