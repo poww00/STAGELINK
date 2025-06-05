@@ -1,293 +1,74 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import axios from "axios";
 import Header from "../../components/common/Header";
 import Footer from "../../components/common/Footer";
 
-//  목데이터 배열
-const mockShows = [
-  {
-    id: 1,
-    name: "뮤지컬 위키드 내한",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 2,
-    name: "연극 햄릿 내한",
-    poster: "/images/poster2.jpg",
-    category: "연극",
-    startDate: "2025-07-01",
-    endDate: "2025-07-10",
-  },
-  {
-    id: 3,
-    name: "콘서트 BTS 내한",
-    poster: "/images/poster3.jpg",
-    category: "콘서트",
-    startDate: "2025-08-15",
-    endDate: "2025-08-16",
-  },
-  {
-    id: 4,
-    name: "오페라 라보엠 내한",
-    poster: "/images/poster4.jpg",
-    category: "오페라",
-    startDate: "2025-09-01",
-    endDate: "2025-09-05",
-  },
-  {
-    id: 5,
-    name: "클래식의 밤",
-    poster: "/images/poster5.jpg",
-    category: "클래식",
-    startDate: "2025-09-20",
-    endDate: "2025-09-21",
-  },
-  {
-    id: 6,
-    name: "아동극 피터팬 내한",
-    poster: "/images/poster6.jpg",
-    category: "아동극",
-    startDate: "2025-10-01",
-    endDate: "2025-10-07",
-  },
-{
-    id: 7,
-    name: "위키드 내한 공연",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 8,
-    name: "위키드 내한 공연-3",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 9,
-    name: "위키드 내한 공연-4",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 10,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 11,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 12,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 13,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 14,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 15,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 16,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-
-  {
-    id: 17,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },{
-    id: 18,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 19,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 20,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-
-  {
-    id: 21,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 22,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 23,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  {
-    id: 24,
-    name: "위키드 내한 공연-5",
-    poster: "/images/poster1.jpg",
-    category: "뮤지컬",
-    age: 15,
-    startDate: "2025-05-01",
-    endDate: "2025-06-01",
-  },
-  
-];
-
 const SearchResultPage = () => {
   const [searchParams] = useSearchParams();
-  const keyword = searchParams.get("keyword") || ""; // URL ?keyword= 값 추출
-  const [shows, setShows] = useState([]);            // 화면에 보여질 공연 리스트
-  const [loading, setLoading] = useState(false);     // 로딩 상태
-  const [page, setPage] = useState(0);               // 현재 페이지 (0부터 시작)
-  const [totalPages, setTotalPages] = useState(1);   // 전체 페이지 수
-  const pageSize = 20;                               // 한 페이지당 아이템 수
+  const keyword = searchParams.get("keyword") || "";
+  const [shows, setShows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
 
-  /* 검색 & 페이징 처리 */
   useEffect(() => {
-    setLoading(true);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get("/api/showinfo/search", {
+          params: {
+            keyword,
+            page,
+            size: pageSize,
+          },
+        });
 
-    // 1. 검색어로 공연명 필터링 (대소문자 무시)
-    let filtered = mockShows;
-    if (keyword.trim() !== "") {
-      filtered = mockShows.filter((show) =>
-        show.name.toLowerCase().includes(keyword.toLowerCase())
-      );
-    }
+        setShows(res.data.content); // content는 Page 객체의 공연 리스트
+        setTotalPages(res.data.totalPages); // 전체 페이지 수
+      } catch (err) {
+        console.error("검색 실패", err);
+        setShows([]);
+        setTotalPages(1);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // 2. 페이지 단위로 자르기
-    const start = page * pageSize;
-    const paginated = filtered.slice(start, start + pageSize);
-    setShows(paginated); // 현재 페이지 공연 리스트 설정
-
-    // 3. 총 페이지 수 계산
-    setTotalPages(Math.ceil(filtered.length / pageSize) || 1);
-    setLoading(false);
+    fetchData();
   }, [keyword, page]);
 
-  /* 검색어가 바뀌면 항상 첫 페이지로 리셋 */
   useEffect(() => {
     setPage(0);
   }, [keyword]);
 
-  /* 페이지 이동 핸들러 */
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < totalPages) setPage(newPage);
   };
 
-  /* 렌더링 */
   return (
     <>
       <Header />
       <div className="max-w-6xl mx-auto px-4 py-8 min-h-[60vh]">
-        {/*  검색어 타이틀 */}
         <h1 className="text-xl font-bold text-purple-600 mb-4">
           “{keyword}” 검색 결과
         </h1>
 
-        {/* 로딩 중 */}
         {loading && (
           <div className="text-center text-gray-400 py-10">검색 중...</div>
         )}
 
-        {/* 결과 없음 */}
         {!loading && shows.length === 0 && (
           <div className="text-center text-gray-500 py-10">
             검색 결과가 없습니다.
           </div>
         )}
 
-        {/*  검색 결과 리스트 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {shows.map((show) => (
             <Link
-              to={`/show/${show.id}`} // 클릭 시 공연 상세로 이동
+              to={`/shows/${show.id}`}
               key={show.id}
               className="bg-white rounded-2xl shadow p-0 flex flex-col overflow-hidden transition hover:shadow-xl border"
               style={{ width: 240 }}
@@ -318,10 +99,8 @@ const SearchResultPage = () => {
           ))}
         </div>
 
-        {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="flex justify-center mt-8 space-x-2">
-            {/* 이전 페이지 버튼 */}
             <button
               onClick={() => handlePageChange(page - 1)}
               disabled={page === 0}
@@ -329,8 +108,6 @@ const SearchResultPage = () => {
             >
               이전
             </button>
-
-            {/* 페이지 번호들 */}
             {[...Array(totalPages).keys()].map((p) => (
               <button
                 key={p}
@@ -344,8 +121,6 @@ const SearchResultPage = () => {
                 {p + 1}
               </button>
             ))}
-
-            {/* 다음 페이지 버튼 */}
             <button
               onClick={() => handlePageChange(page + 1)}
               disabled={page === totalPages - 1}
