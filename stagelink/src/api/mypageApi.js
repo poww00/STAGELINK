@@ -50,3 +50,14 @@ export const fetchMyLikes = async () => {
     });
     return response.data; // 백엔드에서 온 찜한 공연 리스트
 };
+
+// 찜 취소 api
+export const cancelMyLike = async (showId) => {
+    const token = localStorage.getItem("accessToken");
+
+    return await axios.delete(`/api/mypage/likes/${showId}`,{
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+};
