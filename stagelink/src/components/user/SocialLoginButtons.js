@@ -1,4 +1,3 @@
-// src/components/user/SocialLoginButtons.js
 import { getKakaoLoginLink } from "../../api/KakaoApi";
 
 

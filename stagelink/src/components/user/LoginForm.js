@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { login } from "../../slices/loginSlice"
 import { jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
+import AlertModal from "../user/AlertModal";
 
 const LoginForm = () => {
   const [userId, setUserId] = useState("");
@@ -11,6 +12,14 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showModal = (message) => {
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
 
   // 로그 전 원래 경로 기억
   const from = location.state?.from?.pathname || "/";
@@ -40,11 +49,12 @@ const LoginForm = () => {
       navigate(from, { replace: true });
     } catch (error) {
       console.error("로그인 실패", error.response?.data || error.message);
-      alert("로그인에 실패했어요.");
+      showModal("로그인에 실패했어요.");
     }
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="mx-auto w-full max-w-sm">
       <div className="space-y-0">
         <input
@@ -73,6 +83,13 @@ const LoginForm = () => {
         로그인
       </button>
     </form>
+    <AlertModal
+    isOpen={isModalOpen}
+    message={modalMessage}
+    onClose={() => setIsModalOpen(false)}
+  />
+</>
+
   );
 };
 

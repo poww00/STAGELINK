@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import AlertModal from "../../components/user/AlertModal";
 
 const ChangePasswordPage = () => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -9,6 +10,14 @@ const ChangePasswordPage = () => {
   const [message, setMessage] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showModal = (message) => {
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
 
   const validatePassword = (pw) => {
     return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/.test(pw);
@@ -36,18 +45,22 @@ const ChangePasswordPage = () => {
     }
 
     try {
-      await axios.put("/api/mypage/change-password", {
-        currentPassword,
-        newPassword,
-        confirmPassword,
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      await axios.put(
+        "/api/mypage/change-password",
+        {
+          currentPassword,
+          newPassword,
+          confirmPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
         }
-      });
+      );
 
-      alert("비밀번호가 성공적으로 변경되었습니다.");
-      navigate("/mypage");
+      showModal("비밀번호가 성공적으로 변경되었습니다.");
+      setTimeout(() => navigate("/mypage"), 1500);
     } catch (error) {
       console.error("비밀번호 변경 실패", error);
       setMessage("현재 비밀번호가 일치하지 않거나 오류가 발생했습니다.");
@@ -115,6 +128,11 @@ const ChangePasswordPage = () => {
           </button>
         </div>
       </form>
+      <AlertModal
+        isOpen={isModalOpen}
+        message={modalMessage}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

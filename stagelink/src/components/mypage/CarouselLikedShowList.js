@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { cancelMyLike } from "../../api/mypageApi";
+import AlertModal from "../user/AlertModal";
 
 const CarouselShowList = ({ title, shows, setShows }) => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -8,6 +9,14 @@ const CarouselShowList = ({ title, shows, setShows }) => {
 
   const totalPages = Math.ceil(shows.length / ITEMS_PER_PAGE);
   const translateX = -currentPage * cardWidth * ITEMS_PER_PAGE;
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showModal = (message) => {
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
 
   // 데이터 개수 변동 시 currentPage 보정
   useEffect(() => {
@@ -27,15 +36,16 @@ const CarouselShowList = ({ title, shows, setShows }) => {
   const handleCancelLike = async (showNo) => {
     try {
       await cancelMyLike(showNo);
-      alert("찜이 취소되었습니다.");
+      showModal("찜이 취소되었습니다.");
       setShows((prev) => prev.filter((s) => s.showNo !== showNo));
     } catch (err) {
       console.error("찜 취소 실패", err);
-      alert("찜 취소에 실패했습니다.");
+      showModal("찜 취소에 실패했습니다.");
     }
   };
   
   return (
+    <>
     <section className="relative w-full">
       <h3 className="text-lg font-bold mb-3">{title}</h3>
       {shows.length === 0 ? (
@@ -117,6 +127,12 @@ const CarouselShowList = ({ title, shows, setShows }) => {
         </div>
       )}
     </section>
+    <AlertModal
+    isOpen={isModalOpen}
+    message={modalMessage}
+    onClose={() => setIsModalOpen(false)}
+    />
+  </>
   );
 };
 
