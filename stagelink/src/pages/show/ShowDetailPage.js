@@ -50,11 +50,11 @@ const ShowDetailPage = () => {
       .catch(() => setSessions([]));
   }, [id]);
 
-  // 찜 여부
+  // 찜 여부 확인
   useEffect(() => {
     if (id && userId) {
       axios
-        .get(`/api/likes/check?showNo=${id}&userId=${userId}`)
+        .get(`/api/likes/check?showInfoId=${id}&userId=${userId}`)
         .then(res => setLiked(res.data))
         .catch(() => setLiked(false));
     }
@@ -63,7 +63,7 @@ const ShowDetailPage = () => {
   // 로그인 안내
   const openLoginModal = (message) => setLoginModal({ open: true, message });
 
-  // 찜하기/취소
+  // 찜하기 / 찜취소
   const handleLike = () => {
     if (!userId) {
       openLoginModal("로그인이 필요한 서비스입니다. 로그인 해주세요!");
@@ -71,7 +71,7 @@ const ShowDetailPage = () => {
     }
     if (liked) {
       axios
-        .delete(`/api/likes?showNo=${id}&userId=${userId}`)
+        .delete(`/api/likes?showInfoId=${id}&userId=${userId}`)
         .then(() => {
           setLiked(false);
           openLoginModal("찜 목록에서 삭제되었습니다!");
@@ -79,7 +79,7 @@ const ShowDetailPage = () => {
         .catch(() => openLoginModal("찜 취소에 실패했습니다."));
     } else {
       axios
-        .post(`/api/likes?showNo=${id}&userId=${userId}`)
+        .post(`/api/likes?showInfoId=${id}&userId=${userId}`)
         .then(() => {
           setLiked(true);
           openLoginModal("찜 목록에 추가되었습니다!");
