@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import useCustomLogin from '../../hook/useCustomLogin'; 
+import AlertModal from '../../components/user/AlertModal';
 
 const ConfirmPasswordPage = () => {
   const [password, setPassword] = useState('');
@@ -9,10 +10,18 @@ const ConfirmPasswordPage = () => {
   const navigate = useNavigate();
   const { signupType } = useCustomLogin(); 
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showModal = (message) => {
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
+
   // 카카오 계정일 경우 접근 제한
   useEffect(() => {
     if (signupType === "KAKAO") {
-      alert("카카오 계정으로 가입한 사용자는 접근할 수 없습니다.");
+      showModal("카카오 계정으로 가입한 사용자는 접근할 수 없습니다.");
       navigate("/mypage", { replace: true });
     }
   }, [signupType, navigate]);
@@ -73,6 +82,11 @@ const ConfirmPasswordPage = () => {
           </button>
         </div>
       </form>
+      <AlertModal
+        isOpen={isModalOpen}
+        message={modalMessage}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

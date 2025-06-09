@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import AlertModal from "../user/AlertModal";
 
 // 회원가입 폼
 const RegisterForm = () => {
@@ -11,12 +12,19 @@ const RegisterForm = () => {
     password: "",
     confirmPassword: "",
     name: "",
-    birthday: "",
+    birthYear:"",
+    birthMonth:"",
+    birthDay: "",
     gender: "",
     nickname: "",
     userEmailId: "",
     userEmailDomain: "",
   });
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
   const [emailDomainInput, setEmailDomainInput] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -27,6 +35,14 @@ const RegisterForm = () => {
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [termsChecked, setTermsChecked] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
+
+  const [modalMessage, setModalMessage] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const showModal = (msg) => {
+    setModalMessage(msg);
+    setIsModalOpen(true);
+  }
 
   const validateUserId = (value) => /^[A-Za-z0-9]{8,20}$/.test(value);
   const validatePassword = (value) => /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/.test(value);
@@ -59,20 +75,20 @@ const RegisterForm = () => {
   }, [formData.userEmailId, formData.userEmailDomain, emailDomainInput]);
 
   const checkUserId = async () => {
-    if (!formData.userId) return alert("아이디를 입력하세요.");
-    if (!isUserIdValid) return alert("아이디 형식을 확인하세요.");
+    if (!formData.userId) return showModal("아이디를 입력하세요.");
+    if (!isUserIdValid) return showModal("아이디 형식을 확인하세요.");
     try {
       const res = await axios.get(`http://localhost:8080/api/member/check-userId?userId=${formData.userId}`);
       if (res.data.available) {
-        alert("사용 가능한 아이디입니다.");
+        showModal("사용 가능한 아이디입니다.");
         setIdChecked(true);
       } else {
-        alert("이미 사용 중인 아이디입니다.");
+        showModal("이미 사용 중인 아이디입니다.");
         setIdChecked(false);
       }
     } catch (err) {
       console.error(err);
-      alert("아이디 확인 중 오류가 발생했습니다.");
+      showModal("아이디 확인 중 오류가 발생했습니다.");
     }
   };
 
@@ -84,15 +100,15 @@ const RegisterForm = () => {
     try {
       const res = await axios.get(`http://localhost:8080/api/member/check-email?userEmail=${fullEmail}`);
       if (res.data.available) {
-        alert("사용 가능한 이메일입니다.");
+        showModal("사용 가능한 이메일입니다.");
         setEmailChecked(true);
       } else {
-        alert("이미 등록된 이메일입니다.");
+        showModal("이미 등록된 이메일입니다.");
         setEmailChecked(false);
       }
     } catch (err) {
       console.error(err);
-      alert("이메일 확인 중 오류가 발생했습니다.");
+      showModal("이메일 확인 중 오류가 발생했습니다.");
     }
   };
 
@@ -131,8 +147,8 @@ const RegisterForm = () => {
     try {
       console.log("제출할 데이터:", finalForm);
       await axios.post("http://localhost:8080/api/member/register", finalForm);
-      alert("회원가입 성공!");
-      navigate("/login");
+      showModal("회원가입 성공!");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
       console.error("회원가입 실패:", error);
       setErrorMsg("회원가입에 실패했습니다. 다시 시도해주세요.");
@@ -145,6 +161,7 @@ const RegisterForm = () => {
   ];
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-2xl mx-auto px-6">
       <h2 className="text-2xl font-bold text-left text-purple-600 mt-10 mb-6">회원가입</h2>
 
@@ -327,6 +344,12 @@ const RegisterForm = () => {
         </button>
       </div>
     </form>
+    <AlertModal
+    isOpen={isModalOpen}
+    message={modalMessage}
+    onClose={() => setIsModalOpen(false)}
+    />
+    </>
   );
 };
 

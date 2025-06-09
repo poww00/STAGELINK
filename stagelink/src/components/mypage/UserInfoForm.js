@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import WithdrawButton from "./WithdrawButton";
+import AlertModal from "../user/AlertModal";
 
 
 const UserInfoForm = () => {
@@ -21,6 +22,14 @@ const UserInfoForm = () => {
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [initialEmail, setInitialEmail] = useState("");
   const navigate = useNavigate();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showModal = (message) => {
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
 
   const emailDomains = [
     "naver.com", "gmail.com", "hanmail.net", "nate.com",
@@ -79,22 +88,22 @@ const UserInfoForm = () => {
     const fullEmail = `${formData.userEmailId}@${domain}`;
 
     if (!validateEmail(fullEmail)) {
-      alert("올바른 이메일 형식이 아닙니다.");
+      showModal("올바른 이메일 형식이 아닙니다.");
       return;
     }
 
     try {
       const res = await axios.get(`/api/member/check-email?userEmail=${fullEmail}`);
       if (res.data.available) {
-        alert("사용 가능한 이메일입니다.");
+        showModal("사용 가능한 이메일입니다.");
         setEmailChecked(true);
       } else {
-        alert("이미 등록된 이메일입니다.");
+        showModal("이미 등록된 이메일입니다.");
         setEmailChecked(false);
       }
     } catch (err) {
       console.error(err);
-      alert("이메일 중복 확인 중 오류 발생");
+      showModal("이메일 중복 확인 중 오류 발생");
     }
   };
 
@@ -117,7 +126,7 @@ const UserInfoForm = () => {
     }
 
     if (fullEmail !== initialEmail && !emailChecked) {
-      alert("이메일 중복 확인을 해주세요.");
+      showModal("이메일 중복 확인을 해주세요.");
       return;
     }
 
@@ -134,7 +143,7 @@ const UserInfoForm = () => {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
-    }).then(() => alert("회원 정보가 수정되었습니다."))
+    }).then(() => showModal("회원 정보가 수정되었습니다."))
       .catch((err) => {
         console.error("수정 실패", err);
         setMessage("수정에 실패했습니다.");
@@ -230,6 +239,11 @@ const UserInfoForm = () => {
     <div className="ml-auto">
       <WithdrawButton />
     </div>
+      <AlertModal
+      isOpen={isModalOpen}
+      message={modalMessage}
+      onClose={() => setIsModalOpen(false)}
+    />
     </>
   );
 };
