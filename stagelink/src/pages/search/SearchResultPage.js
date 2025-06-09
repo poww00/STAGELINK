@@ -4,29 +4,40 @@ import axios from "axios";
 import Header from "../../components/common/Header";
 import Footer from "../../components/common/Footer";
 
+/* 관람 연령 포맷터 ─────────────────────────── */
+const formatAge = (ageLabel, age) => {
+  if (ageLabel) {
+    if (/^\d+세 이상$/.test(ageLabel) && !ageLabel.startsWith("만")) {
+      return `만 ${ageLabel}`;          
+    }
+    return ageLabel;
+  }
+  if (age == null) return "";
+  if (age === 0) return "전체 이용가";
+  if (age >= 20) return `${age}개월 이상`;
+  return `만 ${age}세 이상`;
+};
+
 const SearchResultPage = () => {
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("keyword") || "";
+
   const [shows, setShows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 20;
 
+  /* ───────── 데이터 로딩 ───────── */
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await axios.get("/api/showinfo/search", {
-          params: {
-            keyword,
-            page,
-            size: pageSize,
-          },
+          params: { keyword, page, size: pageSize },
         });
-
-        setShows(res.data.content); // content는 Page 객체의 공연 리스트
-        setTotalPages(res.data.totalPages); // 전체 페이지 수
+        setShows(res.data.content);
+        setTotalPages(res.data.totalPages);
       } catch (err) {
         console.error("검색 실패", err);
         setShows([]);
@@ -35,21 +46,20 @@ const SearchResultPage = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [keyword, page]);
 
-  useEffect(() => {
-    setPage(0);
-  }, [keyword]);
+  useEffect(() => setPage(0), [keyword]);
 
-  const handlePageChange = (newPage) => {
-    if (newPage >= 0 && newPage < totalPages) setPage(newPage);
+  const handlePageChange = (p) => {
+    if (p >= 0 && p < totalPages) setPage(p);
   };
 
+  /* ───────── 렌더 ───────── */
   return (
     <>
       <Header />
+
       <div className="max-w-6xl mx-auto px-4 py-8 min-h-[60vh]">
         <h1 className="text-xl font-bold text-purple-600 mb-4">
           “{keyword}” 검색 결과
@@ -65,33 +75,34 @@ const SearchResultPage = () => {
           </div>
         )}
 
+        {/* 결과 그리드 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {shows.map((show) => (
+          {shows.map((s) => (
             <Link
-              to={`/shows/${show.id}`}
-              key={show.id}
+              to={`/shows/${s.id}`}
+              key={s.id}
               className="bg-white rounded-2xl shadow p-0 flex flex-col overflow-hidden transition hover:shadow-xl border"
               style={{ width: 240 }}
             >
               <img
-                src={show.poster}
-                alt={show.name}
+                src={s.poster}
+                alt={s.name}
                 className="w-full h-72 object-cover"
               />
               <div className="p-4">
-                <h3 className="font-bold text-lg mb-1 truncate">{show.name}</h3>
+                <h3 className="font-bold text-lg mb-1 truncate">{s.name}</h3>
                 <div className="text-sm text-gray-600 mb-1">
-                  {show.category}
-                  {show.age && (
+                  {s.category}
+                  {formatAge(s.ageLabel, s.age) && (
                     <>
                       <span className="mx-1">·</span>
-                      {show.age}세 이상
+                      {formatAge(s.ageLabel, s.age)}
                     </>
                   )}
                 </div>
-                {show.startDate && (
+                {s.startDate && (
                   <div className="text-xs text-gray-400">
-                    공연기간: {show.startDate} ~ {show.endDate || ""}
+                    공연기간: {s.startDate} ~ {s.endDate || ""}
                   </div>
                 )}
               </div>
@@ -99,6 +110,7 @@ const SearchResultPage = () => {
           ))}
         </div>
 
+        {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="flex justify-center mt-8 space-x-2">
             <button
@@ -108,7 +120,8 @@ const SearchResultPage = () => {
             >
               이전
             </button>
-            {[...Array(totalPages).keys()].map((p) => (
+
+            {Array.from({ length: totalPages }).map((_, p) => (
               <button
                 key={p}
                 onClick={() => handlePageChange(p)}
@@ -121,6 +134,7 @@ const SearchResultPage = () => {
                 {p + 1}
               </button>
             ))}
+
             <button
               onClick={() => handlePageChange(page + 1)}
               disabled={page === totalPages - 1}
@@ -131,6 +145,7 @@ const SearchResultPage = () => {
           </div>
         )}
       </div>
+
       <Footer />
     </>
   );
