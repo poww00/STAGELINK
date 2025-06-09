@@ -32,12 +32,14 @@ const FindPwPage = () => {
       });
 
     showModal("인증 성공! 비밀번호를 재설정하세요.");
+    setTimeout(() => {
     navigate("/reset-password", {
-        state : {
-            userId : userId,
-            userEmail : userEmail,
-        },
-    }); // 다음 페이지로 이동
+      state: {
+        userId: userId,
+        userEmail: userEmail,
+      },
+    });
+  }, 2000);
 
   } catch (err) {
     showModal("일치하는 회원이 없습니다.");
