@@ -79,7 +79,11 @@ const ResetPwPage = () => {
       });
 
       showModal("비밀번호가 성공적으로 재설정되었습니다.");
-      navigate("/login");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+      
     } catch (err) {
       showModal("오류가 발생했습니다.");
       console.error(err);
