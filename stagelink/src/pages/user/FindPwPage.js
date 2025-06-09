@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Footer from "../../components/common/Footer";
 import Header from "../../components/common/Header";
 import { useLocation } from "react-router-dom";
+import AlertModal from "../../components/user/AlertModal";
 
 
 
@@ -12,6 +13,14 @@ const FindPwPage = () => {
   const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showModal = (message) => {
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
 
   const handleFindPw = async (e) => {
     console.log("handleFindId 실행됨");
@@ -22,7 +31,7 @@ const FindPwPage = () => {
         userEmail,
       });
 
-    alert("인증 성공! 비밀번호를 재설정하세요.");
+    showModal("인증 성공! 비밀번호를 재설정하세요.");
     navigate("/reset-password", {
         state : {
             userId : userId,
@@ -31,7 +40,7 @@ const FindPwPage = () => {
     }); // 다음 페이지로 이동
 
   } catch (err) {
-    alert("일치하는 회원이 없습니다.");
+    showModal("일치하는 회원이 없습니다.");
     console.error(err);
   }
 };
@@ -107,6 +116,11 @@ return (
     </div>
 
     <Footer /> 
+    <AlertModal
+        isOpen={isModalOpen}
+        message={modalMessage}
+        onClose={() => setIsModalOpen(false)}
+      />
   </>
 );
 };

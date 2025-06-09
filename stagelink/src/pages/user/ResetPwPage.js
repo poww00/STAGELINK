@@ -3,6 +3,7 @@ import axios from "axios";
 import Footer from "../../components/common/Footer";
 import Header from "../../components/common/Header";
 import { useLocation, useNavigate } from "react-router-dom";
+import AlertModal from "../../components/user/AlertModal";
 
 const ResetPwPage = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -14,6 +15,14 @@ const ResetPwPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userId, userEmail } = location.state || {};
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showModal = (message) => {
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
 
   const validatePassword = (value) =>
     /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/.test(value);
@@ -69,10 +78,10 @@ const ResetPwPage = () => {
         confirmNewPassword,
       });
 
-      alert("비밀번호가 성공적으로 재설정되었습니다.");
+      showModal("비밀번호가 성공적으로 재설정되었습니다.");
       navigate("/login");
     } catch (err) {
-      alert("오류가 발생했습니다.");
+      showModal("오류가 발생했습니다.");
       console.error(err);
     }
   };
@@ -131,6 +140,11 @@ const ResetPwPage = () => {
       </div>
 
       <Footer />
+      <AlertModal
+        isOpen={isModalOpen}
+        message={modalMessage}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 };
