@@ -90,14 +90,17 @@ const CarouselRank = ({ filter = "top20" }) => {
 
   /* ───────── 타이틀 ───────── */
   const title = useMemo(() => {
-    if (filter.startsWith("gender:"))
-      return filter.endsWith("MALE")
-        ? "🔥 남성 인기 TOP 20"
-        : "🔥 여성 인기 TOP 20";
-    if (filter.startsWith("age:"))
-      return `🔥 ${filter.split(":")[1]} 인기 TOP 20`;
-    return "🔥 인기 공연 TOP 20";
-  }, [filter]);
+  if (filter.startsWith("gender:")) {
+    const gender = filter.split(":")[1];
+    return gender === "MALE"
+      ? "🔥 남성 인기 TOP 20"
+      : "🔥 여성 인기 TOP 20";
+  }
+  if (filter.startsWith("age:"))
+    return `🔥 ${filter.split(":")[1]} 인기 TOP 20`;
+  return "🔥 인기 공연 TOP 20";
+}, [filter]);
+
 
   const goDetail = (id) => navigate(`/shows/${id}`);
 
